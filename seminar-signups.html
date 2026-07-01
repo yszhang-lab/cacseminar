@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Columbia Aging Center Seminar Series — Sign-ups</title>
+<style>
+  :root{
+    --ink:#1a2233; --muted:#5b6577; --line:#e4e7ee; --bg:#f6f7f9;
+    --brand:#0b3d64; --brand2:#12608f; --accent:#0a7d5a; --warn:#b23b3b;
+    --card:#ffffff; --chip:#eef2f7;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    color:var(--ink);background:var(--bg);line-height:1.5}
+  a{color:var(--brand2);text-decoration:none}
+  a:hover{text-decoration:underline}
+  header.site{background:var(--brand);color:#fff;padding:22px 0}
+  .wrap{max-width:980px;margin:0 auto;padding:0 20px}
+  header.site h1{margin:0;font-size:22px;font-weight:650;letter-spacing:.2px}
+  header.site .sub{margin-top:4px;font-size:13.5px;opacity:.85}
+  .banner{font-size:12.5px;padding:8px 0;text-align:center;background:#fff6e0;
+    border-bottom:1px solid #f0dfae;color:#7a5b12}
+  .banner.live{background:#e8f6ee;border-bottom-color:#bfe3cd;color:#1c6b40}
+  .banner.err{background:#fdecec;border-bottom-color:#f0c4c4;color:#9a2b2b}
+  main{padding:26px 0 60px}
+  h2.term{font-size:18px;margin:0 0 4px}
+  .term-note{color:var(--muted);font-size:13px;margin:0 0 18px}
+
+  table.sched{width:100%;border-collapse:collapse;background:var(--card);
+    border:1px solid var(--line);border-radius:10px;overflow:hidden}
+  table.sched th{background:#eef2f7;text-align:left;font-size:11.5px;text-transform:uppercase;
+    letter-spacing:.5px;color:var(--muted);padding:11px 14px;font-weight:600}
+  table.sched td{padding:13px 14px;border-top:1px solid var(--line);font-size:14px;vertical-align:top}
+  table.sched tr.row{cursor:pointer}
+  table.sched tr.row:hover td{background:#f9fbfd}
+  .spk{font-weight:600}
+  .aff{color:var(--muted);font-size:12.5px}
+  .ttl{color:var(--ink)}
+  .date-cell{white-space:nowrap;font-weight:600;color:var(--brand)}
+  .dow{display:block;font-weight:400;color:var(--muted);font-size:12px}
+
+  .card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:22px;margin-bottom:20px}
+  .spk-name{font-size:22px;font-weight:680;margin:0}
+  .spk-aff{color:var(--muted);font-size:14px;margin:2px 0 12px}
+  .paper{font-style:italic;font-size:15.5px;margin:0 0 16px;color:#2a3548}
+  .meta{display:grid;grid-template-columns:110px 1fr;gap:6px 14px;font-size:14px}
+  .meta dt{color:var(--muted)}
+  .meta dd{margin:0}
+
+  .sec-title{font-size:15px;font-weight:650;margin:26px 0 6px;display:flex;align-items:center;gap:8px}
+  .sec-note{color:var(--muted);font-size:12.5px;margin:0 0 12px}
+
+  .slot{display:flex;align-items:center;gap:12px;padding:11px 14px;border:1px solid var(--line);
+    border-radius:9px;margin-bottom:8px;background:#fff}
+  .slot.filled{background:#f3f8f5;border-color:#cfe6da}
+  .slot .time{width:150px;font-weight:600;font-size:13.5px;color:var(--brand);flex:none}
+  .slot .who{flex:1;font-size:14px}
+  .slot .who .empty{color:#9aa4b2;font-style:italic}
+  .slot .who .name{font-weight:600}
+  .slot .fixed{flex:1;font-size:14px;color:#2a3548;font-weight:600}
+  .slot button{flex:none;border:1px solid var(--brand2);background:#fff;color:var(--brand2);
+    font-size:12.5px;padding:6px 12px;border-radius:7px;cursor:pointer;font-weight:600}
+  .slot button:hover{background:var(--brand2);color:#fff}
+  .slot button:disabled{opacity:.5;cursor:wait}
+  .slot button.cancel{border-color:#cbb;color:var(--warn)}
+  .slot button.cancel:hover{background:var(--warn);color:#fff;border-color:var(--warn)}
+  .slot.seminar{background:#eef4f9;border-color:#cddcea}
+
+  .group-list{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 0}
+  .tag{background:var(--chip);border-radius:20px;padding:4px 11px;font-size:12.5px;display:flex;align-items:center;gap:6px}
+  .tag .x{cursor:pointer;color:var(--muted);font-weight:700}
+  .tag .x:hover{color:var(--warn)}
+  .grpbox{border:1px solid var(--line);border-radius:9px;padding:14px;background:#fff;margin-bottom:8px}
+  .grphead{display:flex;justify-content:space-between;align-items:center}
+  .grptitle{font-weight:600;font-size:14px}
+  .cap{font-size:12.5px;color:var(--muted)}
+  .cap.full{color:var(--warn);font-weight:600}
+  .addrow{display:flex;gap:8px;margin-top:10px}
+  .addrow input{flex:1;padding:8px 11px;border:1px solid var(--line);border-radius:7px;font-size:13.5px}
+  .addrow input:focus{outline:none;border-color:var(--brand2)}
+  .addrow button{border:none;background:var(--accent);color:#fff;padding:8px 15px;border-radius:7px;
+    font-size:13px;font-weight:600;cursor:pointer}
+  .addrow button:disabled{background:#b8c2cc;cursor:not-allowed}
+
+  .backlink{display:inline-block;margin-bottom:14px;font-size:13.5px;cursor:pointer}
+  .footer{color:var(--muted);font-size:12px;text-align:center;margin-top:40px}
+  .hidden{display:none}
+  .loading{color:var(--muted);font-size:14px;padding:30px 0;text-align:center}
+
+  .modal-bg{position:fixed;inset:0;background:rgba(20,28,42,.45);display:flex;align-items:center;
+    justify-content:center;z-index:50}
+  .modal{background:#fff;border-radius:12px;padding:22px;width:320px;box-shadow:0 20px 50px rgba(0,0,0,.25)}
+  .modal h3{margin:0 0 4px;font-size:16px}
+  .modal p{margin:0 0 14px;color:var(--muted);font-size:13px}
+  .modal input{width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:7px;font-size:14px}
+  .modal input:focus{outline:none;border-color:var(--brand2)}
+  .modal .actions{display:flex;gap:8px;justify-content:flex-end;margin-top:16px}
+  .modal .actions button{padding:8px 15px;border-radius:7px;font-size:13px;font-weight:600;cursor:pointer;border:1px solid var(--line);background:#fff}
+  .modal .actions button.primary{background:var(--brand2);color:#fff;border-color:var(--brand2)}
+</style>
+</head>
+<body>
+<header class="site">
+  <div class="wrap">
+    <h1>Columbia Aging Center — Seminar Series</h1>
+    <div class="sub">Fall 2026 · Sign up for meetings with visiting speakers</div>
+  </div>
+</header>
+<div class="banner" id="banner">Loading…</div>
+
+<main class="wrap">
+  <section id="listView">
+    <h2 class="term">Fall 2026 Schedule</h2>
+    <p class="term-note">Click a speaker to view their visit schedule and sign up for a 1-on-1 meeting, lunch, or dinner.</p>
+    <table class="sched">
+      <thead>
+        <tr><th style="width:120px">Date</th><th>Speaker</th><th>Title</th><th style="width:130px">Organizer</th></tr>
+      </thead>
+      <tbody id="listBody"></tbody>
+    </table>
+  </section>
+
+  <section id="detailView" class="hidden"></section>
+
+  <div class="footer">Columbia Aging Center · Times shown in Eastern Time</div>
+</main>
+
+<script>
+/* ============================================================
+   CONFIG — paste your Google Apps Script Web App URL below.
+   Until you do, the site runs in DEMO mode (browser-only).
+   See setup-guide.md for the 5-minute setup.
+   ============================================================ */
+const API_URL = "https://script.google.com/macros/s/AKfycbwW9WEVl-kP0CzOUrpy41ZM_w7mgLurtVzD7s2J2Smc47fSMimczTHMoFgrJdH_bzhr/exec";
+
+/* ---------- Seminar data (edit freely) ----------
+   Each seminar has an ordered list of slots:
+     type "11"      = a 1-on-1 meeting slot (one person)
+     type "seminar" = fixed talk block (no sign-up)
+     type "lunch"/"dinner" = group meal with a cap
+   IMPORTANT: keep each slot's "t" (time text) stable — it is the
+   storage key. If you rename a slot after people sign up, existing
+   sign-ups for the old name stay under the old key.
+--------------------------------------------------- */
+const SEMINARS = [
+  {
+    id:"speaker1", date:"2026-09-14", dow:"Mon",
+    speaker:"Speaker One", affiliation:"Harvard University",
+    title:"Social Determinants of Healthy Aging",
+    time:"4:00pm–5:15pm", location:"ARB 8th Floor Conference Room",
+    organizer:"Organizer Name",
+    office:"ARB 822 (speaker's office)",
+    slots:[
+      {t:"10:00am – 10:30am", type:"11"},
+      {t:"10:30am – 11:00am", type:"11"},
+      {t:"11:00am – 11:30am", type:"11"},
+      {t:"12:00pm – 1:30pm", type:"lunch", cap:6, label:"Group Lunch"},
+      {t:"1:45pm – 2:15pm", type:"11"},
+      {t:"2:15pm – 2:45pm", type:"11"},
+      {t:"3:00pm – 3:30pm", type:"11"},
+      {t:"4:00pm – 5:15pm", type:"seminar", label:"Seminar Presentation"},
+      {t:"6:00pm – 8:00pm", type:"dinner", cap:5, label:"Group Dinner"}
+    ]
+  },
+  {
+    id:"speaker2", date:"2026-09-28", dow:"Mon",
+    speaker:"Speaker Two", affiliation:"University of Michigan",
+    title:"Cognitive Function and the Life Course",
+    time:"4:00pm–5:15pm", location:"ARB 8th Floor Conference Room",
+    organizer:"Organizer Name",
+    office:"ARB 822 (speaker's office)",
+    slots:[
+      {t:"10:00am – 10:30am", type:"11"},
+      {t:"10:30am – 11:00am", type:"11"},
+      {t:"11:00am – 11:30am", type:"11"},
+      {t:"12:00pm – 1:30pm", type:"lunch", cap:6, label:"Group Lunch"},
+      {t:"1:45pm – 2:15pm", type:"11"},
+      {t:"2:15pm – 2:45pm", type:"11"},
+      {t:"3:00pm – 3:30pm", type:"11"},
+      {t:"4:00pm – 5:15pm", type:"seminar", label:"Seminar Presentation"},
+      {t:"6:00pm – 8:00pm", type:"dinner", cap:5, label:"Group Dinner"}
+    ]
+  },
+  {
+    id:"speaker3", date:"2026-10-12", dow:"Mon",
+    speaker:"Speaker Three", affiliation:"UC Berkeley",
+    title:"Biological Aging and Population Health",
+    time:"4:00pm–5:15pm", location:"ARB 8th Floor Conference Room",
+    organizer:"Organizer Name",
+    office:"ARB 822 (speaker's office)",
+    slots:[
+      {t:"10:00am – 10:30am", type:"11"},
+      {t:"10:30am – 11:00am", type:"11"},
+      {t:"11:00am – 11:30am", type:"11"},
+      {t:"12:00pm – 1:30pm", type:"lunch", cap:6, label:"Group Lunch"},
+      {t:"1:45pm – 2:15pm", type:"11"},
+      {t:"2:15pm – 2:45pm", type:"11"},
+      {t:"3:00pm – 3:30pm", type:"11"},
+      {t:"4:00pm – 5:15pm", type:"seminar", label:"Seminar Presentation"},
+      {t:"6:00pm – 8:00pm", type:"dinner", cap:5, label:"Group Dinner"}
+    ]
+  }
+];
+
+/* ---------- Storage layer (Google Sheet API or demo) ---------- */
+const DEMO = !API_URL || API_URL.indexOf("PASTE_YOUR") === 0;
+const LKEY = "seminar_signups_v1";
+let store = {};                 // { seminarId: { slotKey: name | [names] } }
+let currentId = null;           // seminar being viewed, for polling refresh
+
+function slotKeyFor(sl, i){ return (sl.type==="lunch"||sl.type==="dinner" ? "group:" : "11:") + i; }
+function isGroupKey(k){ return k.indexOf("group:") === 0; }
+function semStore(id){ if(!store[id]) store[id]={}; return store[id]; }
+
+/* --- demo (localStorage) helpers --- */
+function loadLocal(){ try{ return JSON.parse(localStorage.getItem(LKEY)) || {}; }catch(e){ return {}; } }
+function saveLocal(){ localStorage.setItem(LKEY, JSON.stringify(store)); }
+
+/* --- network helpers --- */
+async function apiGet(){
+  const r = await fetch(API_URL, { cache:"no-store" });
+  return r.json();
+}
+async function apiPost(payload){
+  const r = await fetch(API_URL, {
+    method:"POST",
+    headers:{ "Content-Type":"text/plain;charset=utf-8" }, // simple request → no CORS preflight
+    body: JSON.stringify(payload)
+  });
+  return r.json();
+}
+
+/* --- pull the full current state into `store` --- */
+async function refresh(){
+  if(DEMO){ store = loadLocal(); return true; }
+  try{
+    const d = await apiGet();
+    if(!d || !d.ok) throw new Error("bad response");
+    const next = {};
+    (d.signups || []).forEach(s=>{
+      const b = next[s.seminar_id] || (next[s.seminar_id] = {});
+      if(isGroupKey(s.slot_key)){ (b[s.slot_key] = b[s.slot_key] || []).push(s.name); }
+      else { b[s.slot_key] = s.name; }
+    });
+    store = next;
+    setBanner("live");
+    return true;
+  }catch(e){
+    setBanner("err");
+    return false;
+  }
+}
+
+/* --- mutations --- */
+async function addSignup(sid, key, name, opts){
+  opts = opts || {};
+  if(DEMO){
+    const st = semStore(sid);
+    if(isGroupKey(key)){
+      const a = st[key] = st[key] || [];
+      if(opts.cap && a.length >= opts.cap){ alert("Sorry, this is now full."); return false; }
+      a.push(name);
+    } else {
+      if(st[key]){ alert("That slot was just taken."); return false; }
+      st[key] = name;
+    }
+    saveLocal();
+    return true;
+  }
+  const res = await apiPost({ action:"add", seminar_id:sid, slot_key:key, name:name,
+                             single: !isGroupKey(key), cap: opts.cap || 0 });
+  if(!res || !res.ok){ alert(errMsg(res && res.error)); return false; }
+  return true;
+}
+async function removeSignup(sid, key, name){
+  if(DEMO){
+    const st = semStore(sid);
+    if(isGroupKey(key)){ const a = st[key] || []; const ix = a.indexOf(name); if(ix>=0) a.splice(ix,1); }
+    else { delete st[key]; }
+    saveLocal();
+    return true;
+  }
+  await apiPost({ action:"remove", seminar_id:sid, slot_key:key, name:name });
+  return true;
+}
+function errMsg(e){
+  if(e==="full") return "Sorry, this is now full.";
+  if(e==="taken") return "That slot was just taken by someone else.";
+  if(e==="duplicate") return "That name is already on this list.";
+  return "Something went wrong — please try again.";
+}
+
+/* ---------- Views ---------- */
+const listView = document.getElementById("listView");
+const detailView = document.getElementById("detailView");
+const listBody = document.getElementById("listBody");
+const bannerEl = document.getElementById("banner");
+
+function setBanner(state){
+  bannerEl.className = "banner" + (state==="live"?" live":state==="err"?" err":"");
+  if(DEMO){
+    bannerEl.className = "banner";
+    bannerEl.innerHTML = "Demo preview — sign-ups save to <b>this browser only</b>. Add your Google Sheet URL in the file to go live (see setup-guide.md).";
+  } else if(state==="err"){
+    bannerEl.textContent = "Can't reach the sign-up sheet right now. Your last view may be out of date — check your connection or the Web App URL.";
+  } else {
+    bannerEl.innerHTML = "Connected to the shared Google Sheet — everyone sees the same sign-ups. ✓";
+  }
+}
+
+function fmtDate(d){
+  const [y,m,day] = d.split("-").map(Number);
+  return new Date(y, m-1, day).toLocaleDateString("en-US",{month:"short",day:"numeric"});
+}
+
+function renderList(){
+  listBody.innerHTML = "";
+  SEMINARS.forEach(s=>{
+    const tr = document.createElement("tr");
+    tr.className = "row";
+    tr.onclick = ()=> showDetail(s.id);
+    tr.innerHTML = `
+      <td class="date-cell">${fmtDate(s.date)}<span class="dow">${s.dow}</span></td>
+      <td><span class="spk">${s.speaker}</span><br><span class="aff">${s.affiliation}</span></td>
+      <td class="ttl">${s.title}</td>
+      <td>${s.organizer}</td>`;
+    listBody.appendChild(tr);
+  });
+}
+
+function showList(){ currentId=null; detailView.classList.add("hidden"); listView.classList.remove("hidden"); window.scrollTo(0,0); }
+
+function showDetail(id){
+  const s = SEMINARS.find(x=>x.id===id);
+  if(!s) return;
+  currentId = id;
+  const st = semStore(id);
+  listView.classList.add("hidden");
+  detailView.classList.remove("hidden");
+  window.scrollTo(0,0);
+
+  const groups = s.slots.map((sl,i)=>({sl,i})).filter(o=> o.sl.type==="lunch" || o.sl.type==="dinner");
+
+  let html = `
+    <span class="backlink" onclick="showList()">← All seminars</span>
+    <div class="card">
+      <h2 class="spk-name">${s.speaker}</h2>
+      <div class="spk-aff">${s.affiliation}</div>
+      <p class="paper">${s.title}</p>
+      <dl class="meta">
+        <dt>Date</dt><dd>${fmtDate(s.date)}, ${s.date.slice(0,4)} (${s.dow})</dd>
+        <dt>Seminar</dt><dd>${s.time}</dd>
+        <dt>Location</dt><dd>${s.location}</dd>
+        <dt>Organizer</dt><dd>${s.organizer}</dd>
+      </dl>
+    </div>
+    <div class="sec-title">🗓️ 1-on-1 Meetings</div>
+    <p class="sec-note">All meetings in ${s.office} unless noted. Click a slot to add your name.</p>
+    <div id="slots"></div>`;
+  groups.forEach(g=>{ html += `<div class="sec-title">${g.sl.type==="lunch"?"🍽️ ":"🍷 "}${g.sl.label}</div><div id="grp-${g.i}"></div>`; });
+  detailView.innerHTML = html;
+
+  // 1-on-1 + seminar rows (in order)
+  const slotsEl = detailView.querySelector("#slots");
+  s.slots.forEach((sl,i)=>{
+    if(sl.type==="lunch" || sl.type==="dinner") return;
+    if(sl.type==="seminar"){
+      const d = document.createElement("div");
+      d.className = "slot seminar";
+      d.innerHTML = `<div class="time">${sl.t}</div><div class="fixed">${sl.label}</div>`;
+      slotsEl.appendChild(d);
+      return;
+    }
+    const key = slotKeyFor(sl,i), name = st[key];
+    const d = document.createElement("div");
+    d.className = "slot" + (name?" filled":"");
+    d.innerHTML = `<div class="time">${sl.t}</div>
+      <div class="who">${ name ? `<span class="name">${escapeHtml(name)}</span>` : `<span class="empty">Available</span>` }</div>`;
+    const btn = document.createElement("button");
+    if(name){
+      btn.className = "cancel"; btn.textContent = "Cancel";
+      btn.onclick = async ()=>{ btn.disabled=true; await removeSignup(id,key,name); await refresh(); showDetail(id); };
+    } else {
+      btn.textContent = "Sign up";
+      btn.onclick = ()=> askName(async nm=>{ if(await addSignup(id,key,nm)){ await refresh(); } showDetail(id); });
+    }
+    d.appendChild(btn);
+    slotsEl.appendChild(d);
+  });
+
+  // group meals
+  groups.forEach(g=>{
+    const box = detailView.querySelector("#grp-"+g.i);
+    const key = slotKeyFor(g.sl, g.i);
+    const arr = st[key] || [];
+    const full = arr.length >= g.sl.cap;
+    const wrap = document.createElement("div");
+    wrap.className = "grpbox";
+    wrap.innerHTML = `<div class="grphead">
+        <span class="grptitle">${g.sl.t}</span>
+        <span class="cap${full?" full":""}">${arr.length} / ${g.sl.cap} spots ${full?"— full":"filled"}</span>
+      </div>`;
+    const list = document.createElement("div"); list.className = "group-list";
+    if(arr.length===0){
+      const e = document.createElement("span");
+      e.style.cssText = "color:#9aa4b2;font-size:13px;font-style:italic";
+      e.textContent = "No sign-ups yet";
+      list.appendChild(e);
+    }
+    arr.forEach(nm=>{
+      const tag = document.createElement("span"); tag.className = "tag";
+      tag.innerHTML = `${escapeHtml(nm)} <span class="x" title="Remove">×</span>`;
+      tag.querySelector(".x").onclick = async ()=>{ await removeSignup(id,key,nm); await refresh(); showDetail(id); };
+      list.appendChild(tag);
+    });
+    wrap.appendChild(list);
+    const row = document.createElement("div"); row.className = "addrow";
+    const inp = document.createElement("input"); inp.placeholder = "Your name"; inp.disabled = full;
+    const add = document.createElement("button"); add.textContent = "Add"; add.disabled = full;
+    const go = async ()=>{
+      const v = inp.value.trim(); if(!v) return;
+      add.disabled = true;
+      if(await addSignup(id,key,v,{cap:g.sl.cap})){ await refresh(); }
+      showDetail(id);
+    };
+    add.onclick = go;
+    inp.onkeydown = e=>{ if(e.key==="Enter") go(); };
+    row.appendChild(inp); row.appendChild(add);
+    wrap.appendChild(row);
+    box.appendChild(wrap);
+  });
+}
+
+/* ---------- Name modal ---------- */
+function askName(cb){
+  const bg = document.createElement("div"); bg.className = "modal-bg";
+  bg.innerHTML = `<div class="modal">
+    <h3>Sign up</h3><p>Enter your name for this slot.</p>
+    <input id="nmInput" placeholder="Your name" autocomplete="name">
+    <div class="actions"><button id="nmCancel">Cancel</button><button class="primary" id="nmOk">Confirm</button></div>
+  </div>`;
+  document.body.appendChild(bg);
+  const inp = bg.querySelector("#nmInput"); inp.focus();
+  const close = ()=> document.body.removeChild(bg);
+  const ok = ()=>{ const v = inp.value.trim(); if(!v){ inp.focus(); return; } close(); cb(v); };
+  bg.querySelector("#nmOk").onclick = ok;
+  bg.querySelector("#nmCancel").onclick = close;
+  inp.onkeydown = e=>{ if(e.key==="Enter") ok(); if(e.key==="Escape") close(); };
+  bg.onclick = e=>{ if(e.target===bg) close(); };
+}
+
+function escapeHtml(s){ return String(s).replace(/[&<>"']/g, c=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c])); }
+
+/* ---------- Init + live polling ---------- */
+async function init(){
+  setBanner(DEMO ? "" : "live");
+  listBody.innerHTML = `<tr><td colspan="4" class="loading">Loading…</td></tr>`;
+  await refresh();
+  renderList();
+}
+init();
+
+// Keep the shared view fresh while people sign up (every 20s, only when live)
+if(!DEMO){
+  setInterval(async ()=>{
+    await refresh();
+    if(currentId && !detailView.classList.contains("hidden")) showDetail(currentId);
+  }, 20000);
+}
+</script>
+</body>
+</html>
