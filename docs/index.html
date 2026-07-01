@@ -115,7 +115,7 @@
     <p class="term-note">Click a speaker to view their visit schedule and sign up for a 1-on-1 meeting, lunch, or dinner.</p>
     <table class="sched">
       <thead>
-        <tr><th style="width:120px">Date</th><th>Speaker</th><th>Title</th><th style="width:130px">Organizer</th></tr>
+        <tr><th style="width:120px">Date</th><th>Speaker</th><th>Title</th><th style="width:130px">Host</th></tr>
       </thead>
       <tbody id="listBody"></tbody>
     </table>
@@ -145,11 +145,11 @@ const API_URL = "https://script.google.com/macros/s/AKfycbwW9WEVl-kP0CzOUrpy41ZM
 --------------------------------------------------- */
 const SEMINARS = [
   {
-    id:"speaker1", date:"2026-09-14", dow:"Mon",
-    speaker:"Speaker One", affiliation:"Harvard University",
-    title:"Social Determinants of Healthy Aging",
-    time:"4:00pm–5:15pm", location:"ARB 8th Floor Conference Room",
-    organizer:"Organizer Name",
+    id:"speaker1", date:"2026-09-23", dow:"Wed",
+    speaker:"Speaker 1", affiliation:"University",
+    title:"TBD",
+    time:"3:00pm–4:00pm", location:"ARB CAC Conference Room 419",
+    organizer:"TBD",
     office:"ARB 822 (speaker's office)",
     slots:[
       {t:"10:00am – 10:30am", type:"11"},
@@ -158,17 +158,16 @@ const SEMINARS = [
       {t:"12:00pm – 1:30pm", type:"lunch", cap:6, label:"Group Lunch"},
       {t:"1:45pm – 2:15pm", type:"11"},
       {t:"2:15pm – 2:45pm", type:"11"},
-      {t:"3:00pm – 3:30pm", type:"11"},
-      {t:"4:00pm – 5:15pm", type:"seminar", label:"Seminar Presentation"},
+      {t:"3:00pm – 4:00pm", type:"seminar", label:"Seminar Presentation"},
       {t:"6:00pm – 8:00pm", type:"dinner", cap:5, label:"Group Dinner"}
     ]
   },
   {
-    id:"speaker2", date:"2026-09-28", dow:"Mon",
-    speaker:"Speaker Two", affiliation:"University of Michigan",
-    title:"Cognitive Function and the Life Course",
-    time:"4:00pm–5:15pm", location:"ARB 8th Floor Conference Room",
-    organizer:"Organizer Name",
+    id:"speaker2", date:"2026-09-23", dow:"Wed",
+    speaker:"Speaker 2", affiliation:"University",
+    title:"TBD",
+    time:"3:00pm–4:00pm", location:"ARB CAC Conference Room 419",
+    organizer:"TBD",
     office:"ARB 822 (speaker's office)",
     slots:[
       {t:"10:00am – 10:30am", type:"11"},
@@ -177,17 +176,16 @@ const SEMINARS = [
       {t:"12:00pm – 1:30pm", type:"lunch", cap:6, label:"Group Lunch"},
       {t:"1:45pm – 2:15pm", type:"11"},
       {t:"2:15pm – 2:45pm", type:"11"},
-      {t:"3:00pm – 3:30pm", type:"11"},
-      {t:"4:00pm – 5:15pm", type:"seminar", label:"Seminar Presentation"},
+      {t:"3:00pm – 4:00pm", type:"seminar", label:"Seminar Presentation"},
       {t:"6:00pm – 8:00pm", type:"dinner", cap:5, label:"Group Dinner"}
     ]
   },
   {
-    id:"speaker3", date:"2026-10-12", dow:"Mon",
-    speaker:"Speaker Three", affiliation:"UC Berkeley",
-    title:"Biological Aging and Population Health",
-    time:"4:00pm–5:15pm", location:"ARB 8th Floor Conference Room",
-    organizer:"Organizer Name",
+    id:"speaker3", date:"2026-09-23", dow:"Wed",
+    speaker:"Speaker 3", affiliation:"University",
+    title:"TBD",
+    time:"3:00pm–4:00pm", location:"ARB CAC Conference Room 419",
+    organizer:"TBD",
     office:"ARB 822 (speaker's office)",
     slots:[
       {t:"10:00am – 10:30am", type:"11"},
@@ -196,8 +194,7 @@ const SEMINARS = [
       {t:"12:00pm – 1:30pm", type:"lunch", cap:6, label:"Group Lunch"},
       {t:"1:45pm – 2:15pm", type:"11"},
       {t:"2:15pm – 2:45pm", type:"11"},
-      {t:"3:00pm – 3:30pm", type:"11"},
-      {t:"4:00pm – 5:15pm", type:"seminar", label:"Seminar Presentation"},
+      {t:"3:00pm – 4:00pm", type:"seminar", label:"Seminar Presentation"},
       {t:"6:00pm – 8:00pm", type:"dinner", cap:5, label:"Group Dinner"}
     ]
   }
@@ -352,7 +349,7 @@ function showDetail(id){
         <dt>Date</dt><dd>${fmtDate(s.date)}, ${s.date.slice(0,4)} (${s.dow})</dd>
         <dt>Seminar</dt><dd>${s.time}</dd>
         <dt>Location</dt><dd>${s.location}</dd>
-        <dt>Organizer</dt><dd>${s.organizer}</dd>
+        <dt>Host</dt><dd>${s.organizer}</dd>
       </dl>
     </div>
     <div class="sec-title">🗓️ 1-on-1 Meetings</div>
