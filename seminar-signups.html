@@ -217,19 +217,24 @@ function semStore(id){ if(!store[id]) store[id]={}; return store[id]; }
 function loadLocal(){ try{ return JSON.parse(localStorage.getItem(LKEY)) || {}; }catch(e){ return {}; } }
 function saveLocal(){ localStorage.setItem(LKEY, JSON.stringify(store)); }
 
-/* --- network helpers --- */
-async function apiGet(){
-  const r = await fetch(API_URL, { cache:"no-store" });
-  return r.json();
-}
-async function apiPost(payload){
-  const r = await fetch(API_URL, {
-    method:"POST",
-    headers:{ "Content-Type":"text/plain;charset=utf-8" }, // simple request → no CORS preflight
-    body: JSON.stringify(payload)
+/* --- network helper: JSONP (script tag) avoids all CORS issues --- */
+let _jsonpN = 0;
+function jsonp(params){
+  return new Promise((resolve, reject)=>{
+    const cb = "__cb" + (++_jsonpN);
+    const s = document.createElement("script");
+    const done = (ok, val)=>{ try{ delete window[cb]; }catch(e){ window[cb]=undefined; }
+      if(s.parentNode) s.parentNode.removeChild(s); clearTimeout(timer); ok?resolve(val):reject(val); };
+    window[cb] = data => done(true, data);
+    const q = Object.keys(params).map(k=> encodeURIComponent(k)+"="+encodeURIComponent(params[k])).join("&");
+    s.src = API_URL + "?" + q + "&callback=" + cb + "&_=" + Date.now();
+    s.onerror = ()=> done(false, new Error("network"));
+    const timer = setTimeout(()=> done(false, new Error("timeout")), 15000);
+    document.body.appendChild(s);
   });
-  return r.json();
 }
+function apiGet(){ return jsonp({ action:"list" }); }
+function apiPost(payload){ return jsonp(payload); }
 
 /* --- pull the full current state into `store` --- */
 async function refresh(){
