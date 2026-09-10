@@ -523,7 +523,6 @@ function showDetail(id){
     wrap.appendChild(list);
     const row = document.createElement("div"); row.className = "addrow";
     const inp = document.createElement("input"); inp.placeholder = "Your name"; inp.disabled = full;
-    inp.value = myName();
     const add = document.createElement("button"); add.textContent = "Add"; add.disabled = full;
     const go = async ()=>{
       const v = inp.value.trim(); if(!v) return;
