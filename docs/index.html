@@ -38,7 +38,7 @@
   .spk{font-weight:600;color:var(--brand2)}
   table.sched tr.row:hover .spk{text-decoration:underline}
   .aff{color:var(--muted);font-size:12.5px;display:block;margin-top:2px;line-height:1.4}
-  .ttl{color:var(--ink);font-weight:650}
+  .ttl{color:var(--ink)}
   .date-cell{white-space:nowrap;font-weight:600;color:var(--brand)}
   .dow{display:block;font-weight:400;color:var(--muted);font-size:12px}
 
@@ -467,7 +467,7 @@ function showDetail(id){
       For lunch and dinner, type your name in the box and click <b>Add</b>. To remove yourself, click <b>Cancel</b> (or the × next to your name).
       <br><span class="howto-note">It may take a few seconds for your name to show up or disappear.</span></div>
     <div class="sec-title">🗓️ 1-on-1 Meetings</div>
-    <p class="sec-note">All meetings in ${s.office} unless noted.</p>
+    <p class="sec-note">All meetings in ${s.office} unless noted. If you need an hour you can put your name in two rows.</p>
     <div id="slots"></div>`;
   groups.forEach(g=>{
     const icon = g.sl.type==="lunch" ? "🍽️ " : g.sl.type==="dinner" ? "🍷 " : "👥 ";
