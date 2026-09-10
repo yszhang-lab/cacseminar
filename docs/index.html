@@ -178,6 +178,9 @@ const API_URL = "https://script.google.com/macros/s/AKfycbwW9WEVl-kP0CzOUrpy41ZM
                       not settled yet); remove the flag to open sign-ups
      "day"          = optional heading shown above the slot (e.g. a second
                       visit day); slots with the same "day" group together
+   Add "titleLink" to a seminar to turn its title into a link on the
+   speaker page (the schedule table keeps the title as plain text, so
+   the whole row stays clickable).
    IMPORTANT: keep each slot's "t" (time text) stable — it is the
    storage key. If you rename a slot after people sign up, existing
    sign-ups for the old name stay under the old key.
@@ -188,6 +191,7 @@ const SEMINARS = [
     speaker:"Michael Gurven", affiliation:["Distinguished Professor", "Department of Anthropology", "UC Santa Barbara"],
     link:"https://gurven.anth.ucsb.edu",
     title:"Seven Decades: How We Evolved to Live Longer",
+    titleLink:"https://press.princeton.edu/books/hardcover/9780691231990/seven-decades",
     time:"3:00pm–4:00pm", location:"CAC Conference Room 419",
     organizer:"Alan Cohen", organizerEmail:"aac2277@cumc.columbia.edu",
     office:"CAC Conference Room 419",
@@ -398,9 +402,13 @@ function setBanner(state){
   }
 }
 
-function titleHtml(s){
+function titleHtml(s, withLink){
   const t = (s.title || "").trim();
-  return (!t || /^tbd$/i.test(t)) ? `<span class="tba">Title to be announced</span>` : escapeHtml(t);
+  if(!t || /^tbd$/i.test(t)) return `<span class="tba">Title to be announced</span>`;
+  const esc = escapeHtml(t);
+  return (withLink && s.titleLink)
+    ? `<a href="${encodeURI(s.titleLink)}" target="_blank" rel="noopener">${esc}</a>`
+    : esc;
 }
 function affHtml(s){
   const a = Array.isArray(s.affiliation) ? s.affiliation : [s.affiliation || ""];
@@ -455,7 +463,7 @@ function showDetail(id){
     <div class="card">
       <h2 class="spk-name">${ s.link ? `<a href="${s.link}" target="_blank" rel="noopener">${s.speaker}</a>` : s.speaker }${ s.note ? `<span class="note-tag">${escapeHtml(s.note)}</span>` : "" }</h2>
       <div class="spk-aff">${affHtml(s)}</div>
-      <p class="paper">${titleHtml(s)}</p>
+      <p class="paper">${titleHtml(s, true)}</p>
       <dl class="meta">
         <dt>Date</dt><dd>${fmtDate(s.date)}, ${s.date.slice(0,4)} (${s.dow})</dd>
         <dt>Seminar</dt><dd>${s.time}</dd>
