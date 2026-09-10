@@ -185,7 +185,7 @@ const SEMINARS = [
   },
   {
     id:"speaker2", date:"2026-10-14", dow:"Wed",
-    speaker:"Speaker 2", affiliation:"University",
+    speaker:"Speaker 2", affiliation:"Postdoctoral Scholar, Columbia Aging Center",
     note:"Internal speaker", signups:false,
     title:"TBD",
     time:"3:00pm–4:00pm", location:"ARB CAC Conference Room 419",
@@ -233,6 +233,11 @@ function isGroupSlot(sl){ return sl.type==="lunch" || sl.type==="dinner" || sl.t
 function slotKeyFor(sl, i){ return sl.k || ((isGroupSlot(sl) ? "group:" : "11:") + i); }
 function isGroupKey(k){ return k.indexOf("group:") === 0; }
 function semStore(id){ if(!store[id]) store[id]={}; return store[id]; }
+
+/* --- remember the last name typed, so it is pre-filled next time (this browser only) --- */
+const NKEY = "seminar_my_name";
+function myName(){ try{ return localStorage.getItem(NKEY) || ""; }catch(e){ return ""; } }
+function saveMyName(n){ try{ localStorage.setItem(NKEY, n); }catch(e){} }
 
 /* --- demo (localStorage) helpers --- */
 function loadLocal(){ try{ return JSON.parse(localStorage.getItem(LKEY)) || {}; }catch(e){ return {}; } }
@@ -354,6 +359,7 @@ const bannerEl = document.getElementById("banner");
 
 function setBanner(state){
   bannerEl.className = "banner" + (state==="live"?" live":state==="err"?" err":"");
+  if(state==="loading" && !DEMO){ bannerEl.textContent = "Loading current sign-ups…"; return; }
   if(DEMO){
     bannerEl.className = "banner";
     bannerEl.innerHTML = "Demo preview — sign-ups save to <b>this browser only</b>. Add your Google Sheet URL in the file to go live (see setup-guide.md).";
@@ -445,6 +451,11 @@ function showDetail(id){
 
   // 1-on-1 + seminar rows (in order)
   const slotsEl = detailView.querySelector("#slots");
+  if(!loaded){
+    const n = document.createElement("p"); n.className = "sec-note";
+    n.textContent = "Loading current sign-ups…";
+    slotsEl.appendChild(n);
+  }
   s.slots.forEach((sl,i)=>{
     if(isGroupSlot(sl)) return;
     if(sl.type==="seminar"){
@@ -499,9 +510,11 @@ function showDetail(id){
     wrap.appendChild(list);
     const row = document.createElement("div"); row.className = "addrow";
     const inp = document.createElement("input"); inp.placeholder = "Your name"; inp.disabled = full;
+    inp.value = myName();
     const add = document.createElement("button"); add.textContent = "Add"; add.disabled = full;
     const go = async ()=>{
       const v = inp.value.trim(); if(!v) return;
+      saveMyName(v);
       add.disabled = true;
       await addSignup(id,key,v,{cap:g.sl.cap||0});
       showDetail(id);
@@ -523,9 +536,9 @@ function askName(cb){
     <div class="actions"><button id="nmCancel">Cancel</button><button class="primary" id="nmOk">Confirm</button></div>
   </div>`;
   document.body.appendChild(bg);
-  const inp = bg.querySelector("#nmInput"); inp.focus();
+  const inp = bg.querySelector("#nmInput"); inp.value = myName(); inp.focus(); inp.select();
   const close = ()=> document.body.removeChild(bg);
-  const ok = ()=>{ const v = inp.value.trim(); if(!v){ inp.focus(); return; } close(); cb(v); };
+  const ok = ()=>{ const v = inp.value.trim(); if(!v){ inp.focus(); return; } saveMyName(v); close(); cb(v); };
   bg.querySelector("#nmOk").onclick = ok;
   bg.querySelector("#nmCancel").onclick = close;
   inp.onkeydown = e=>{ if(e.key==="Enter") ok(); if(e.key==="Escape") close(); };
@@ -535,11 +548,14 @@ function askName(cb){
 function escapeHtml(s){ return String(s).replace(/[&<>"']/g, c=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c])); }
 
 /* ---------- Init + live polling ---------- */
+let loaded = false;             // first read of the sheet finished?
 async function init(){
-  setBanner(DEMO ? "" : "live");
-  listBody.innerHTML = `<tr><td colspan="4" class="loading">Loading…</td></tr>`;
-  await refresh();
-  renderList();
+  renderList();                                   // schedule is static — show it at once
+  if(DEMO){ setBanner(""); await refresh(); loaded = true; return; }
+  setBanner("loading");
+  await refresh();                                // sign-ups arrive in the background
+  loaded = true;
+  if(currentId) rerender(currentId);
 }
 init();
 
