@@ -70,6 +70,13 @@
   .slot button.cancel:hover{background:var(--warn);color:#fff;border-color:var(--warn)}
   .slot.seminar{background:#eef4f9;border-color:#cddcea}
 
+  .sec-title.tbd{color:#9aa4b2}
+  .sec-note.tbd{color:#9aa4b2}
+  .grpbox.tbd{background:#f7f8fa;border-color:#e8ebf0}
+  .grpbox.tbd .grptitle{color:#9aa4b2}
+  .grpbox.tbd .cap{color:#a8b0bc;font-style:italic}
+  .tbd-msg{color:#9aa4b2;font-size:13px;font-style:italic;margin-top:8px}
+
   .group-list{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 0}
   .tag{background:var(--chip);border-radius:20px;padding:4px 11px;font-size:12.5px;display:flex;align-items:center;gap:6px}
   .tag .x{cursor:pointer;color:var(--muted);font-weight:700}
@@ -163,6 +170,8 @@ const API_URL = "https://script.google.com/macros/s/AKfycbwW9WEVl-kP0CzOUrpy41ZM
      type "group"   = open group sign-up (omit "cap" for no limit)
      "k"            = optional fixed storage key; set it when you insert a slot
                       so existing sign-ups keep their key
+     "tbd": true    = show the slot greyed out with no sign-up box (details
+                      not settled yet); remove the flag to open sign-ups
    IMPORTANT: keep each slot's "t" (time text) stable — it is the
    storage key. If you rename a slot after people sign up, existing
    sign-ups for the old name stay under the old key.
@@ -172,7 +181,7 @@ const SEMINARS = [
     id:"speaker1", date:"2026-09-23", dow:"Wed",
     speaker:"Michael Gurven", affiliation:["Distinguished Professor", "Department of Anthropology", "UC Santa Barbara"],
     link:"https://gurven.anth.ucsb.edu",
-    title:"TBD",
+    title:"Seven Decades: How We Evolved to Live Longer",
     time:"3:00pm–4:00pm", location:"CAC Conference Room 419",
     organizer:"Alan Cohen", organizerEmail:"aac2277@cumc.columbia.edu",
     office:"CAC Conference Room 419",
@@ -182,7 +191,8 @@ const SEMINARS = [
       {t:"11:00am – 11:30am", type:"11"},
       {t:"4:15pm – 5:15pm", type:"group", k:"group:disc", label:"Group Discussion with Trainees",
        note:"Add your name if you plan to attend."},
-      {t:"12:00pm – 1:30pm", type:"lunch", cap:6, label:"Lunch with Trainees", k:"group:3"},
+      {t:"Time and location TBD", type:"lunch", cap:6, label:"Lunch with Trainees", k:"group:3", tbd:true,
+       note:"Details are still being arranged — sign-ups will open once they are confirmed."},
       {t:"1:45pm – 2:15pm", type:"11", k:"11:4"},
       {t:"2:15pm – 2:45pm", type:"11", k:"11:5"},
       {t:"3:00pm – 4:00pm", type:"seminar", label:"Seminar Presentation"},
@@ -461,8 +471,9 @@ function showDetail(id){
     <div id="slots"></div>`;
   groups.forEach(g=>{
     const icon = g.sl.type==="lunch" ? "🍽️ " : g.sl.type==="dinner" ? "🍷 " : "👥 ";
-    html += `<div class="sec-title">${icon}${g.sl.label}</div>`;
-    if(g.sl.note) html += `<p class="sec-note">${escapeHtml(g.sl.note)}</p>`;
+    const tbdCls = g.sl.tbd ? " tbd" : "";
+    html += `<div class="sec-title${tbdCls}">${icon}${g.sl.label}${ g.sl.tbd ? ` <span class="note-tag">To be confirmed</span>` : "" }</div>`;
+    if(g.sl.note) html += `<p class="sec-note${tbdCls}">${escapeHtml(g.sl.note)}</p>`;
     html += `<div id="grp-${g.i}"></div>`;
   });
   detailView.innerHTML = html;
@@ -507,7 +518,16 @@ function showDetail(id){
     const arr = st[key] || [];
     const full = g.sl.cap ? arr.length >= g.sl.cap : false;
     const wrap = document.createElement("div");
-    wrap.className = "grpbox";
+    wrap.className = "grpbox" + (g.sl.tbd ? " tbd" : "");
+    if(g.sl.tbd){
+      wrap.innerHTML = `<div class="grphead">
+          <span class="grptitle">${escapeHtml(g.sl.t)}</span>
+          <span class="cap">Sign-ups not open yet</span>
+        </div>
+        <div class="tbd-msg">Check back later — the host or Emma will let everyone know when this can be booked.</div>`;
+      box.appendChild(wrap);
+      return;
+    }
     wrap.innerHTML = `<div class="grphead">
         <span class="grptitle">${g.sl.t}</span>
         <span class="cap${full?" full":""}">${ g.sl.cap ? `${arr.length} / ${g.sl.cap} spots ${full?"— full":"filled"}` : `${arr.length} signed up` }</span>
