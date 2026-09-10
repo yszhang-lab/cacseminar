@@ -89,6 +89,9 @@
   .howto b{font-weight:650}
   .howto-note{color:var(--muted);font-size:12.5px}
 
+  .note-tag{display:inline-block;background:var(--chip);color:var(--muted);border:1px solid var(--line);
+    border-radius:20px;padding:1px 9px;font-size:11.5px;font-weight:600;margin-left:7px;vertical-align:1px}
+
   .host-name{font-weight:600}
   .host-mail{font-size:12.5px}
 
@@ -150,6 +153,9 @@ const API_URL = "https://script.google.com/macros/s/AKfycbwW9WEVl-kP0CzOUrpy41ZM
      type "11"      = a 1-on-1 meeting slot (one person)
      type "seminar" = fixed talk block (no sign-up)
      type "lunch"/"dinner" = group meal with a cap
+     type "group"   = open group sign-up (omit "cap" for no limit)
+     "k"            = optional fixed storage key; set it when you insert a slot
+                      so existing sign-ups keep their key
    IMPORTANT: keep each slot's "t" (time text) stable — it is the
    storage key. If you rename a slot after people sign up, existing
    sign-ups for the old name stay under the old key.
@@ -171,12 +177,15 @@ const SEMINARS = [
       {t:"1:45pm – 2:15pm", type:"11"},
       {t:"2:15pm – 2:45pm", type:"11"},
       {t:"3:00pm – 4:00pm", type:"seminar", label:"Seminar Presentation"},
-      {t:"6:00pm – 8:00pm", type:"dinner", cap:5, label:"Dinner"}
+      {t:"4:15pm – 5:15pm", type:"group", k:"group:disc", label:"Group Discussion with Trainees",
+       note:"Add your name if you plan to attend."},
+      {t:"6:00pm – 8:00pm", type:"dinner", cap:5, label:"Dinner", k:"group:7"}
     ]
   },
   {
     id:"speaker2", date:"2026-10-14", dow:"Wed",
     speaker:"Speaker 2", affiliation:"University",
+    note:"Internal speaker", signups:false,
     title:"TBD",
     time:"3:00pm–4:00pm", location:"ARB CAC Conference Room 419",
     organizer:"TBD",
@@ -193,11 +202,12 @@ const SEMINARS = [
     ]
   },
   {
-    id:"speaker3", date:"2026-11-03", dow:"Tue",
-    speaker:"Speaker 3", affiliation:"University",
+    id:"speaker3", date:"2026-12-02", dow:"Wed",
+    speaker:"Lauren H. Nicholas", affiliation:"Professor of Medicine (Geriatrics), University of Colorado Anschutz",
+    link:"https://www.cuanschutz.edu/centers/bioethicshumanities/engage-and-explore/team/Nicholas-Lauren-H--EXTHT9UEG",
     title:"TBD",
     time:"3:00pm–4:00pm", location:"ARB CAC Conference Room 419",
-    organizer:"TBD",
+    organizer:"Yuan Zhang", organizerEmail:"yuan.zhang@columbia.edu",
     office:"CAC Conference Room 419",
     slots:[
       {t:"10:00am – 10:30am", type:"11"},
@@ -218,7 +228,8 @@ const LKEY = "seminar_signups_v1";
 let store = {};                 // { seminarId: { slotKey: name | [names] } }
 let currentId = null;           // seminar being viewed, for polling refresh
 
-function slotKeyFor(sl, i){ return (sl.type==="lunch"||sl.type==="dinner" ? "group:" : "11:") + i; }
+function isGroupSlot(sl){ return sl.type==="lunch" || sl.type==="dinner" || sl.type==="group"; }
+function slotKeyFor(sl, i){ return sl.k || ((isGroupSlot(sl) ? "group:" : "11:") + i); }
 function isGroupKey(k){ return k.indexOf("group:") === 0; }
 function semStore(id){ if(!store[id]) store[id]={}; return store[id]; }
 
@@ -342,7 +353,7 @@ function renderList(){
     tr.onclick = ()=> showDetail(s.id);
     tr.innerHTML = `
       <td class="date-cell">${fmtDate(s.date)}<span class="dow">${s.dow}</span></td>
-      <td><span class="spk">${s.speaker}</span><br><span class="aff">${s.affiliation}</span></td>
+      <td><span class="spk">${s.speaker}</span>${ s.note ? `<span class="note-tag">${escapeHtml(s.note)}</span>` : "" }<br><span class="aff">${s.affiliation}</span></td>
       <td class="ttl">${s.title}</td>
       <td>${hostCell(s)}</td>`;
     listBody.appendChild(tr);
@@ -360,12 +371,12 @@ function showDetail(id){
   detailView.classList.remove("hidden");
   window.scrollTo(0,0);
 
-  const groups = s.slots.map((sl,i)=>({sl,i})).filter(o=> o.sl.type==="lunch" || o.sl.type==="dinner");
+  const groups = s.slots.map((sl,i)=>({sl,i})).filter(o=> isGroupSlot(o.sl));
 
   let html = `
     <span class="backlink" onclick="showList()">← All seminars</span>
     <div class="card">
-      <h2 class="spk-name">${ s.link ? `<a href="${s.link}" target="_blank" rel="noopener">${s.speaker}</a>` : s.speaker }</h2>
+      <h2 class="spk-name">${ s.link ? `<a href="${s.link}" target="_blank" rel="noopener">${s.speaker}</a>` : s.speaker }${ s.note ? `<span class="note-tag">${escapeHtml(s.note)}</span>` : "" }</h2>
       <div class="spk-aff">${s.affiliation}</div>
       <p class="paper">${s.title}</p>
       <dl class="meta">
@@ -374,20 +385,33 @@ function showDetail(id){
         <dt>Location</dt><dd>${s.location}</dd>
         <dt>Host</dt><dd>${hostDetail(s)}</dd>
       </dl>
-    </div>
+    </div>`;
+
+  if(s.signups === false){
+    html += `<div class="howto">Internal seminar &mdash; no sign-up sheet for this one. Everyone is welcome at the talk itself.</div>`;
+    detailView.innerHTML = html;
+    return;
+  }
+
+  html += `
     <div class="howto"><b>How to sign up:</b> click <b>Sign up</b> next to an open time, then type your name and confirm.
       For lunch and dinner, type your name in the box and click <b>Add</b>. To remove yourself, click <b>Cancel</b> (or the × next to your name).
       <br><span class="howto-note">It may take a few seconds for your name to show up or disappear.</span></div>
     <div class="sec-title">🗓️ 1-on-1 Meetings</div>
     <p class="sec-note">All meetings in ${s.office} unless noted.</p>
     <div id="slots"></div>`;
-  groups.forEach(g=>{ html += `<div class="sec-title">${g.sl.type==="lunch"?"🍽️ ":"🍷 "}${g.sl.label}</div><div id="grp-${g.i}"></div>`; });
+  groups.forEach(g=>{
+    const icon = g.sl.type==="lunch" ? "🍽️ " : g.sl.type==="dinner" ? "🍷 " : "👥 ";
+    html += `<div class="sec-title">${icon}${g.sl.label}</div>`;
+    if(g.sl.note) html += `<p class="sec-note">${escapeHtml(g.sl.note)}</p>`;
+    html += `<div id="grp-${g.i}"></div>`;
+  });
   detailView.innerHTML = html;
 
   // 1-on-1 + seminar rows (in order)
   const slotsEl = detailView.querySelector("#slots");
   s.slots.forEach((sl,i)=>{
-    if(sl.type==="lunch" || sl.type==="dinner") return;
+    if(isGroupSlot(sl)) return;
     if(sl.type==="seminar"){
       const d = document.createElement("div");
       d.className = "slot seminar";
@@ -417,12 +441,12 @@ function showDetail(id){
     const box = detailView.querySelector("#grp-"+g.i);
     const key = slotKeyFor(g.sl, g.i);
     const arr = st[key] || [];
-    const full = arr.length >= g.sl.cap;
+    const full = g.sl.cap ? arr.length >= g.sl.cap : false;
     const wrap = document.createElement("div");
     wrap.className = "grpbox";
     wrap.innerHTML = `<div class="grphead">
         <span class="grptitle">${g.sl.t}</span>
-        <span class="cap${full?" full":""}">${arr.length} / ${g.sl.cap} spots ${full?"— full":"filled"}</span>
+        <span class="cap${full?" full":""}">${ g.sl.cap ? `${arr.length} / ${g.sl.cap} spots ${full?"— full":"filled"}` : `${arr.length} signed up` }</span>
       </div>`;
     const list = document.createElement("div"); list.className = "group-list";
     if(arr.length===0){
@@ -444,7 +468,7 @@ function showDetail(id){
     const go = async ()=>{
       const v = inp.value.trim(); if(!v) return;
       add.disabled = true;
-      if(await addSignup(id,key,v,{cap:g.sl.cap})){ await refresh(); }
+      if(await addSignup(id,key,v,{cap:g.sl.cap||0})){ await refresh(); }
       showDetail(id);
     };
     add.onclick = go;
