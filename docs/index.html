@@ -53,6 +53,7 @@
 
   .sec-title{font-size:15px;font-weight:650;margin:26px 0 6px;display:flex;align-items:center;gap:8px}
   .sec-note{color:var(--muted);font-size:12.5px;margin:0 0 12px}
+  .sec-note b{color:var(--ink);font-weight:650}
 
   .slot{display:flex;align-items:center;gap:12px;padding:11px 14px;border:1px solid var(--line);
     border-radius:9px;margin-bottom:8px;background:#fff}
@@ -481,16 +482,12 @@ function showDetail(id){
      with no "day" fall into one unlabelled block (single-day visits). */
   const days = [];
   s.slots.forEach(sl=>{ const d = sl.day || ""; if(days.indexOf(d) < 0) days.push(d); });
-  let noteShown = false;
   days.forEach((day, di)=>{
     const mine = s.slots.map((sl,i)=>({sl,i})).filter(o=> (o.sl.day || "") === day);
     if(day) html += `<div class="day-title">${escapeHtml(day)}</div>`;
     if(mine.some(o=> !isGroupSlot(o.sl))){
       html += `<div class="sec-title">🗓️ 1-on-1 Meetings</div>`;
-      if(!noteShown){
-        noteShown = true;
-        html += `<p class="sec-note">All meetings in ${s.office} unless noted. If you need an hour, add your name to two time slots.</p>`;
-      }
+      html += `<p class="sec-note">All meetings in ${s.office} unless noted. <b>If you need an hour, add your name to two time slots.</b></p>`;
       html += `<div class="slots" id="slots-${di}"></div>`;
     }
     mine.filter(o=> isGroupSlot(o.sl)).forEach(g=>{
