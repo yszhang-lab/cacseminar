@@ -27,8 +27,9 @@
   h2.term{font-size:18px;margin:0 0 4px}
   .term-note{color:var(--muted);font-size:13px;margin:0 0 18px}
 
-  table.sched{width:100%;border-collapse:collapse;background:var(--card);
+  table.sched{width:100%;table-layout:fixed;border-collapse:collapse;background:var(--card);
     border:1px solid var(--line);border-radius:10px;overflow:hidden}
+  table.sched td{overflow-wrap:break-word}
   table.sched th{background:#eef2f7;text-align:left;font-size:11.5px;text-transform:uppercase;
     letter-spacing:.5px;color:var(--muted);padding:11px 14px;font-weight:600}
   table.sched td{padding:13px 14px;border-top:1px solid var(--line);font-size:14px;vertical-align:top}
@@ -36,7 +37,7 @@
   table.sched tr.row:hover td{background:#f9fbfd}
   .spk{font-weight:600;color:var(--brand2)}
   table.sched tr.row:hover .spk{text-decoration:underline}
-  .aff{color:var(--muted);font-size:12.5px}
+  .aff{color:var(--muted);font-size:12.5px;display:block;margin-top:2px;line-height:1.4}
   .ttl{color:var(--ink)}
   .date-cell{white-space:nowrap;font-weight:600;color:var(--brand)}
   .dow{display:block;font-weight:400;color:var(--muted);font-size:12px}
@@ -127,7 +128,7 @@
     <div class="howto"><b>How to sign up:</b> click a speaker's name in the table below to open their visit schedule, then sign up for a 1-on-1 meeting, lunch, or dinner.</div>
     <table class="sched">
       <thead>
-        <tr><th style="width:120px">Date</th><th>Speaker</th><th>Title</th><th style="width:130px">Host</th></tr>
+        <tr><th style="width:96px">Date</th><th style="width:30%">Speaker</th><th>Title</th><th style="width:140px">Host</th></tr>
       </thead>
       <tbody id="listBody"></tbody>
     </table>
@@ -173,12 +174,12 @@ const SEMINARS = [
       {t:"10:00am – 10:30am", type:"11"},
       {t:"10:30am – 11:00am", type:"11"},
       {t:"11:00am – 11:30am", type:"11"},
-      {t:"12:00pm – 1:30pm", type:"lunch", cap:6, label:"Lunch with Trainees"},
-      {t:"1:45pm – 2:15pm", type:"11"},
-      {t:"2:15pm – 2:45pm", type:"11"},
-      {t:"3:00pm – 4:00pm", type:"seminar", label:"Seminar Presentation"},
       {t:"4:15pm – 5:15pm", type:"group", k:"group:disc", label:"Group Discussion with Trainees",
        note:"Add your name if you plan to attend."},
+      {t:"12:00pm – 1:30pm", type:"lunch", cap:6, label:"Lunch with Trainees", k:"group:3"},
+      {t:"1:45pm – 2:15pm", type:"11", k:"11:4"},
+      {t:"2:15pm – 2:45pm", type:"11", k:"11:5"},
+      {t:"3:00pm – 4:00pm", type:"seminar", label:"Seminar Presentation"},
       {t:"6:00pm – 8:00pm", type:"dinner", cap:5, label:"Dinner", k:"group:7"}
     ]
   },
@@ -263,6 +264,7 @@ async function refresh(){
       if(isGroupKey(s.slot_key)){ (b[s.slot_key] = b[s.slot_key] || []).push(s.name); }
       else { b[s.slot_key] = s.name; }
     });
+    applyPending(next);
     store = next;
     setBanner("live");
     return true;
@@ -272,36 +274,69 @@ async function refresh(){
   }
 }
 
-/* --- mutations --- */
+/* --- mutations ---------------------------------------------------------
+   The screen updates immediately and the Google Sheet is written in the
+   background, so nobody waits on the round trip. Anything not yet confirmed
+   lives in `pending` and is re-applied on top of each refresh, so a poll that
+   lands mid-write can't make a name flicker away. If the write fails, the
+   change is rolled back and the person is told.
+------------------------------------------------------------------------ */
+let pending = [];      // [{sid, key, name, op:"add"|"remove"}]
+
+function applyOne(target, p){
+  const b = target[p.sid] || (target[p.sid] = {});
+  if(p.op === "add"){
+    if(isGroupKey(p.key)){ const a = b[p.key] = b[p.key] || []; if(a.indexOf(p.name) < 0) a.push(p.name); }
+    else { b[p.key] = p.name; }
+  } else {
+    if(isGroupKey(p.key)){ const a = b[p.key] || []; const ix = a.indexOf(p.name); if(ix >= 0) a.splice(ix,1); }
+    else if(b[p.key] === p.name){ delete b[p.key]; }
+  }
+}
+function applyPending(target){ pending.forEach(p=> applyOne(target, p)); }
+function undo(p){
+  applyOne(store, { sid:p.sid, key:p.key, name:p.name, op: p.op==="add" ? "remove" : "add" });
+}
+function rerender(sid){
+  if(currentId === sid && !detailView.classList.contains("hidden")) showDetail(sid);
+}
+function sync(p, payload, failMsg){
+  pending.push(p);
+  const done = ()=>{ pending = pending.filter(x=> x !== p); rerender(p.sid); };
+  apiPost(payload).then(res=>{
+    if(!res || !res.ok){ undo(p); alert(failMsg(res && res.error)); }
+    done();
+  }).catch(()=>{
+    undo(p); done();
+    alert("Couldn't reach the sign-up sheet — that change wasn't saved. Please try again.");
+  });
+}
+
 async function addSignup(sid, key, name, opts){
   opts = opts || {};
-  if(DEMO){
-    const st = semStore(sid);
-    if(isGroupKey(key)){
-      const a = st[key] = st[key] || [];
-      if(opts.cap && a.length >= opts.cap){ alert("Sorry, this is now full."); return false; }
-      a.push(name);
-    } else {
-      if(st[key]){ alert("That slot was just taken."); return false; }
-      st[key] = name;
-    }
-    saveLocal();
-    return true;
+  const st = semStore(sid);
+  if(isGroupKey(key)){
+    const a = st[key] || [];
+    if(opts.cap && a.length >= opts.cap){ alert("Sorry, this is now full."); return false; }
+    if(a.indexOf(name) >= 0){ alert("That name is already on this list."); return false; }
+  } else if(st[key]){
+    alert("That slot was just taken.");
+    return false;
   }
-  const res = await apiPost({ action:"add", seminar_id:sid, slot_key:key, name:name,
-                             single: !isGroupKey(key), cap: opts.cap || 0 });
-  if(!res || !res.ok){ alert(errMsg(res && res.error)); return false; }
+  const p = { sid:sid, key:key, name:name, op:"add" };
+  applyOne(store, p);
+  if(DEMO){ saveLocal(); return true; }
+  sync(p, { action:"add", seminar_id:sid, slot_key:key, name:name,
+            single: !isGroupKey(key), cap: opts.cap || 0 }, errMsg);
   return true;
 }
 async function removeSignup(sid, key, name){
-  if(DEMO){
-    const st = semStore(sid);
-    if(isGroupKey(key)){ const a = st[key] || []; const ix = a.indexOf(name); if(ix>=0) a.splice(ix,1); }
-    else { delete st[key]; }
-    saveLocal();
-    return true;
-  }
-  await apiPost({ action:"remove", seminar_id:sid, slot_key:key, name:name });
+  semStore(sid);
+  const p = { sid:sid, key:key, name:name, op:"remove" };
+  applyOne(store, p);
+  if(DEMO){ saveLocal(); return true; }
+  sync(p, { action:"remove", seminar_id:sid, slot_key:key, name:name },
+       ()=> "Couldn't remove that name — please try again.");
   return true;
 }
 function errMsg(e){
@@ -353,7 +388,7 @@ function renderList(){
     tr.onclick = ()=> showDetail(s.id);
     tr.innerHTML = `
       <td class="date-cell">${fmtDate(s.date)}<span class="dow">${s.dow}</span></td>
-      <td><span class="spk">${s.speaker}</span>${ s.note ? `<span class="note-tag">${escapeHtml(s.note)}</span>` : "" }<br><span class="aff">${s.affiliation}</span></td>
+      <td><span class="spk">${s.speaker}</span>${ s.note ? `<span class="note-tag">${escapeHtml(s.note)}</span>` : "" }<span class="aff">${s.affiliation}</span></td>
       <td class="ttl">${s.title}</td>
       <td>${hostCell(s)}</td>`;
     listBody.appendChild(tr);
@@ -427,10 +462,10 @@ function showDetail(id){
     const btn = document.createElement("button");
     if(name){
       btn.className = "cancel"; btn.textContent = "Cancel";
-      btn.onclick = async ()=>{ btn.disabled=true; await removeSignup(id,key,name); await refresh(); showDetail(id); };
+      btn.onclick = async ()=>{ btn.disabled=true; await removeSignup(id,key,name); showDetail(id); };
     } else {
       btn.textContent = "Sign up";
-      btn.onclick = ()=> askName(async nm=>{ if(await addSignup(id,key,nm)){ await refresh(); } showDetail(id); });
+      btn.onclick = ()=> askName(async nm=>{ await addSignup(id,key,nm); showDetail(id); });
     }
     d.appendChild(btn);
     slotsEl.appendChild(d);
@@ -458,7 +493,7 @@ function showDetail(id){
     arr.forEach(nm=>{
       const tag = document.createElement("span"); tag.className = "tag";
       tag.innerHTML = `${escapeHtml(nm)} <span class="x" title="Remove">×</span>`;
-      tag.querySelector(".x").onclick = async ()=>{ await removeSignup(id,key,nm); await refresh(); showDetail(id); };
+      tag.querySelector(".x").onclick = async ()=>{ await removeSignup(id,key,nm); showDetail(id); };
       list.appendChild(tag);
     });
     wrap.appendChild(list);
@@ -468,7 +503,7 @@ function showDetail(id){
     const go = async ()=>{
       const v = inp.value.trim(); if(!v) return;
       add.disabled = true;
-      if(await addSignup(id,key,v,{cap:g.sl.cap||0})){ await refresh(); }
+      await addSignup(id,key,v,{cap:g.sl.cap||0});
       showDetail(id);
     };
     add.onclick = go;
