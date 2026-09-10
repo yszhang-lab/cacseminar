@@ -150,6 +150,7 @@
 const API_URL = "https://script.google.com/macros/s/AKfycbwW9WEVl-kP0CzOUrpy41ZM_w7mgLurtVzD7s2J2Smc47fSMimczTHMoFgrJdH_bzhr/exec";
 
 /* ---------- Seminar data (edit freely) ----------
+   "affiliation" is a list of lines (title, department, university).
    Each seminar has an ordered list of slots:
      type "11"      = a 1-on-1 meeting slot (one person)
      type "seminar" = fixed talk block (no sign-up)
@@ -164,7 +165,7 @@ const API_URL = "https://script.google.com/macros/s/AKfycbwW9WEVl-kP0CzOUrpy41ZM
 const SEMINARS = [
   {
     id:"speaker1", date:"2026-09-23", dow:"Wed",
-    speaker:"Michael Gurven", affiliation:"Distinguished Professor, Department of Anthropology, UC Santa Barbara",
+    speaker:"Michael Gurven", affiliation:["Distinguished Professor", "Department of Anthropology", "UC Santa Barbara"],
     link:"https://gurven.anth.ucsb.edu",
     title:"TBD",
     time:"3:00pm–4:00pm", location:"ARB CAC Conference Room 419",
@@ -185,7 +186,7 @@ const SEMINARS = [
   },
   {
     id:"speaker2", date:"2026-10-14", dow:"Wed",
-    speaker:"Speaker 2", affiliation:"Postdoctoral Scholar, Columbia Aging Center",
+    speaker:"Speaker 2", affiliation:["Postdoctoral Scholar", "Columbia Aging Center"],
     note:"Internal speaker", signups:false,
     title:"TBD",
     time:"3:00pm–4:00pm", location:"ARB CAC Conference Room 419",
@@ -204,7 +205,7 @@ const SEMINARS = [
   },
   {
     id:"speaker3", date:"2026-12-02", dow:"Wed",
-    speaker:"Lauren H. Nicholas", affiliation:"Health economist · Professor of Medicine (Geriatrics), University of Colorado Anschutz",
+    speaker:"Lauren H. Nicholas", affiliation:["Health Economist", "Professor of Medicine (Geriatrics)", "University of Colorado Anschutz"],
     link:"https://www.cuanschutz.edu/centers/bioethicshumanities/engage-and-explore/team/Nicholas-Lauren-H--EXTHT9UEG",
     title:"TBD",
     time:"3:00pm–4:00pm", location:"ARB CAC Conference Room 419",
@@ -370,6 +371,10 @@ function setBanner(state){
   }
 }
 
+function affHtml(s){
+  const a = Array.isArray(s.affiliation) ? s.affiliation : [s.affiliation || ""];
+  return a.map(escapeHtml).join("<br>");
+}
 function hostCell(s){
   const nm = `<span class="host-name">${escapeHtml(s.organizer || "TBD")}</span>`;
   if(!s.organizerEmail) return nm;
@@ -394,7 +399,7 @@ function renderList(){
     tr.onclick = ()=> showDetail(s.id);
     tr.innerHTML = `
       <td class="date-cell">${fmtDate(s.date)}<span class="dow">${s.dow}</span></td>
-      <td><span class="spk">${s.speaker}</span>${ s.note ? `<span class="note-tag">${escapeHtml(s.note)}</span>` : "" }<span class="aff">${s.affiliation}</span></td>
+      <td><span class="spk">${s.speaker}</span>${ s.note ? `<span class="note-tag">${escapeHtml(s.note)}</span>` : "" }<span class="aff">${affHtml(s)}</span></td>
       <td class="ttl">${s.title}</td>
       <td>${hostCell(s)}</td>`;
     listBody.appendChild(tr);
@@ -418,7 +423,7 @@ function showDetail(id){
     <span class="backlink" onclick="showList()">← All seminars</span>
     <div class="card">
       <h2 class="spk-name">${ s.link ? `<a href="${s.link}" target="_blank" rel="noopener">${s.speaker}</a>` : s.speaker }${ s.note ? `<span class="note-tag">${escapeHtml(s.note)}</span>` : "" }</h2>
-      <div class="spk-aff">${s.affiliation}</div>
+      <div class="spk-aff">${affHtml(s)}</div>
       <p class="paper">${s.title}</p>
       <dl class="meta">
         <dt>Date</dt><dd>${fmtDate(s.date)}, ${s.date.slice(0,4)} (${s.dow})</dd>
