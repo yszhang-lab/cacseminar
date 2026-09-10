@@ -46,6 +46,7 @@
   .spk-name{font-size:22px;font-weight:680;margin:0}
   .spk-aff{color:var(--muted);font-size:14px;margin:2px 0 12px}
   .paper{font-style:italic;font-size:15.5px;margin:0 0 16px;color:#2a3548}
+  .tba{color:#9aa4b2;font-style:italic;font-weight:400}
   .meta{display:grid;grid-template-columns:110px 1fr;gap:6px 14px;font-size:14px}
   .meta dt{color:var(--muted)}
   .meta dd{margin:0}
@@ -172,7 +173,7 @@ const SEMINARS = [
     speaker:"Michael Gurven", affiliation:["Distinguished Professor", "Department of Anthropology", "UC Santa Barbara"],
     link:"https://gurven.anth.ucsb.edu",
     title:"TBD",
-    time:"3:00pm–4:00pm", location:"ARB CAC Conference Room 419",
+    time:"3:00pm–4:00pm", location:"CAC Conference Room 419",
     organizer:"Alan Cohen", organizerEmail:"aac2277@cumc.columbia.edu",
     office:"CAC Conference Room 419",
     slots:[
@@ -185,8 +186,8 @@ const SEMINARS = [
       {t:"1:45pm – 2:15pm", type:"11", k:"11:4"},
       {t:"2:15pm – 2:45pm", type:"11", k:"11:5"},
       {t:"3:00pm – 4:00pm", type:"seminar", label:"Seminar Presentation"},
-      {t:"Time/location TBD", type:"dinner", cap:5, label:"Dinner", k:"group:7",
-       note:"The host or Emma will email you the dinner time and location directly."}
+      {t:"Time and location TBD", type:"dinner", cap:5, label:"Dinner", k:"group:7",
+       note:"The host or Emma will email attendees the details."}
     ]
   },
   {
@@ -194,7 +195,7 @@ const SEMINARS = [
     speaker:"Speaker 2", affiliation:["Postdoctoral Scholar", "Columbia Aging Center"],
     note:"Internal speaker", signups:false,
     title:"TBD",
-    time:"3:00pm–4:00pm", location:"ARB CAC Conference Room 419",
+    time:"3:00pm–4:00pm", location:"CAC Conference Room 419",
     organizer:"TBD",
     office:"CAC Conference Room 419",
     slots:[
@@ -205,8 +206,8 @@ const SEMINARS = [
       {t:"1:45pm – 2:15pm", type:"11"},
       {t:"2:15pm – 2:45pm", type:"11"},
       {t:"3:00pm – 4:00pm", type:"seminar", label:"Seminar Presentation"},
-      {t:"Time/location TBD", type:"dinner", cap:5, label:"Dinner",
-       note:"The host or Emma will email you the dinner time and location directly."}
+      {t:"Time and location TBD", type:"dinner", cap:5, label:"Dinner",
+       note:"The host or Emma will email attendees the details."}
     ]
   },
   {
@@ -214,7 +215,7 @@ const SEMINARS = [
     speaker:"Lauren H. Nicholas", affiliation:["Health Economist", "Professor of Medicine (Geriatrics)", "University of Colorado Anschutz"],
     link:"https://www.cuanschutz.edu/centers/bioethicshumanities/engage-and-explore/team/Nicholas-Lauren-H--EXTHT9UEG",
     title:"TBD",
-    time:"3:00pm–4:00pm", location:"ARB CAC Conference Room 419",
+    time:"3:00pm–4:00pm", location:"CAC Conference Room 419",
     organizer:"Yuan Zhang", organizerEmail:"yuan.zhang@columbia.edu",
     office:"CAC Conference Room 419",
     slots:[
@@ -225,8 +226,8 @@ const SEMINARS = [
       {t:"1:45pm – 2:15pm", type:"11"},
       {t:"2:15pm – 2:45pm", type:"11"},
       {t:"3:00pm – 4:00pm", type:"seminar", label:"Seminar Presentation"},
-      {t:"Time/location TBD", type:"dinner", cap:5, label:"Dinner",
-       note:"The host or Emma will email you the dinner time and location directly."}
+      {t:"Time and location TBD", type:"dinner", cap:5, label:"Dinner",
+       note:"The host or Emma will email attendees the details."}
     ]
   }
 ];
@@ -378,6 +379,10 @@ function setBanner(state){
   }
 }
 
+function titleHtml(s){
+  const t = (s.title || "").trim();
+  return (!t || /^tbd$/i.test(t)) ? `<span class="tba">Title to be announced</span>` : escapeHtml(t);
+}
 function affHtml(s){
   const a = Array.isArray(s.affiliation) ? s.affiliation : [s.affiliation || ""];
   return a.map(escapeHtml).join("<br>");
@@ -407,7 +412,7 @@ function renderList(){
     tr.innerHTML = `
       <td class="date-cell">${fmtDate(s.date)}<span class="dow">${s.dow}</span></td>
       <td><span class="spk">${s.speaker}</span>${ s.note ? `<span class="note-tag">${escapeHtml(s.note)}</span>` : "" }<span class="aff">${affHtml(s)}</span></td>
-      <td class="ttl">${s.title}</td>
+      <td class="ttl">${titleHtml(s)}</td>
       <td>${hostCell(s)}</td>`;
     listBody.appendChild(tr);
   });
@@ -431,7 +436,7 @@ function showDetail(id){
     <div class="card">
       <h2 class="spk-name">${ s.link ? `<a href="${s.link}" target="_blank" rel="noopener">${s.speaker}</a>` : s.speaker }${ s.note ? `<span class="note-tag">${escapeHtml(s.note)}</span>` : "" }</h2>
       <div class="spk-aff">${affHtml(s)}</div>
-      <p class="paper">${s.title}</p>
+      <p class="paper">${titleHtml(s)}</p>
       <dl class="meta">
         <dt>Date</dt><dd>${fmtDate(s.date)}, ${s.date.slice(0,4)} (${s.dow})</dd>
         <dt>Seminar</dt><dd>${s.time}</dd>
@@ -489,7 +494,7 @@ function showDetail(id){
       btn.onclick = async ()=>{ btn.disabled=true; await removeSignup(id,key,name); showDetail(id); };
     } else {
       btn.textContent = "Sign up";
-      btn.onclick = ()=> askName(async nm=>{ await addSignup(id,key,nm); showDetail(id); });
+      btn.onclick = ()=> askName(`${sl.t} with ${s.speaker}`, async nm=>{ await addSignup(id,key,nm); showDetail(id); });
     }
     d.appendChild(btn);
     slotsEl.appendChild(d);
@@ -540,10 +545,10 @@ function showDetail(id){
 }
 
 /* ---------- Name modal ---------- */
-function askName(cb){
+function askName(what, cb){
   const bg = document.createElement("div"); bg.className = "modal-bg";
   bg.innerHTML = `<div class="modal">
-    <h3>Sign up</h3><p>Enter your name for this slot.</p>
+    <h3>Sign up</h3><p>${escapeHtml(what)}<br>Enter your name for this slot.</p>
     <input id="nmInput" placeholder="Your name" autocomplete="name">
     <div class="actions"><button id="nmCancel">Cancel</button><button class="primary" id="nmOk">Confirm</button></div>
   </div>`;
