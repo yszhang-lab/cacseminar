@@ -97,6 +97,10 @@
   .host-mail{font-size:12.5px}
 
   .backlink{display:inline-block;margin-bottom:14px;font-size:13.5px;cursor:pointer}
+  .roomhelp{display:flex;gap:10px;align-items:flex-start;margin:16px 0 0;padding:12px 14px;
+    background:#fff;border:1px solid var(--line);border-radius:9px;font-size:14px;color:var(--ink)}
+  .roomhelp .ico{flex:none;font-size:17px;line-height:1.3}
+  .roomhelp b{font-weight:650}
   .footer{color:var(--muted);font-size:12px;text-align:center;margin-top:40px;line-height:1.7}
   .hidden{display:none}
   .loading{color:var(--muted);font-size:14px;padding:30px 0;text-align:center}
@@ -132,13 +136,13 @@
       </thead>
       <tbody id="listBody"></tbody>
     </table>
+    <div class="roomhelp"><span class="ico">📍</span><div><b>Need help finding the meeting room or seminar room?</b>
+      Contact the host or Emma Kaishian (<a href="mailto:ek3138@cumc.columbia.edu">ek3138@cumc.columbia.edu</a>).</div></div>
   </section>
 
   <section id="detailView" class="hidden"></section>
 
-  <div class="footer">Columbia Aging Center · Times shown in Eastern Time<br>
-    Need help finding the meeting room or seminar room? Contact the host or Emma Kaishian
-    (<a href="mailto:ek3138@cumc.columbia.edu">ek3138@cumc.columbia.edu</a>).</div>
+  <div class="footer">Columbia Aging Center · Times shown in Eastern Time</div>
 </main>
 
 <script>
@@ -181,7 +185,8 @@ const SEMINARS = [
       {t:"1:45pm – 2:15pm", type:"11", k:"11:4"},
       {t:"2:15pm – 2:45pm", type:"11", k:"11:5"},
       {t:"3:00pm – 4:00pm", type:"seminar", label:"Seminar Presentation"},
-      {t:"6:00pm – 8:00pm", type:"dinner", cap:5, label:"Dinner", k:"group:7"}
+      {t:"Time/location TBD", type:"dinner", cap:5, label:"Dinner", k:"group:7",
+       note:"The host or Emma will email you the dinner time and location directly."}
     ]
   },
   {
@@ -200,7 +205,8 @@ const SEMINARS = [
       {t:"1:45pm – 2:15pm", type:"11"},
       {t:"2:15pm – 2:45pm", type:"11"},
       {t:"3:00pm – 4:00pm", type:"seminar", label:"Seminar Presentation"},
-      {t:"6:00pm – 8:00pm", type:"dinner", cap:5, label:"Dinner"}
+      {t:"Time/location TBD", type:"dinner", cap:5, label:"Dinner",
+       note:"The host or Emma will email you the dinner time and location directly."}
     ]
   },
   {
@@ -219,7 +225,8 @@ const SEMINARS = [
       {t:"1:45pm – 2:15pm", type:"11"},
       {t:"2:15pm – 2:45pm", type:"11"},
       {t:"3:00pm – 4:00pm", type:"seminar", label:"Seminar Presentation"},
-      {t:"6:00pm – 8:00pm", type:"dinner", cap:5, label:"Dinner"}
+      {t:"Time/location TBD", type:"dinner", cap:5, label:"Dinner",
+       note:"The host or Emma will email you the dinner time and location directly."}
     ]
   }
 ];
@@ -430,6 +437,7 @@ function showDetail(id){
         <dt>Seminar</dt><dd>${s.time}</dd>
         <dt>Location</dt><dd>${s.location}</dd>
         <dt>Host</dt><dd>${hostDetail(s)}</dd>
+        <dt>Room help</dt><dd>Need help finding the meeting room or seminar room? Contact the host or Emma Kaishian (<a href="mailto:ek3138@cumc.columbia.edu">ek3138@cumc.columbia.edu</a>).</dd>
       </dl>
     </div>`;
 
