@@ -69,9 +69,9 @@
   .slot button.cancel{border-color:#cbb;color:var(--warn)}
   .slot button.cancel:hover{background:var(--warn);color:#fff;border-color:var(--warn)}
   .slot.seminar{background:#eef4f9;border-color:#cddcea}
-  .day-head{font-size:11.5px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;
-    color:var(--muted);margin:16px 0 8px;padding-bottom:5px;border-bottom:1px solid var(--line)}
-  #slots .day-head:first-child{margin-top:2px}
+  .day-title{font-size:12.5px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;
+    color:#fff;background:var(--brand);border-radius:8px;padding:9px 14px;margin:26px 0 6px}
+  .day-title + .sec-title{margin-top:14px}
 
   .sec-title.tbd{color:#9aa4b2}
   .sec-note.tbd{color:#9aa4b2}
@@ -194,11 +194,11 @@ const SEMINARS = [
       {t:"10:00am – 10:30am", type:"11", k:"11:0", day:"Wednesday, Sept 23"},
       {t:"10:30am – 11:00am", type:"11", k:"11:1", day:"Wednesday, Sept 23"},
       {t:"11:00am – 11:30am", type:"11", k:"11:2", day:"Wednesday, Sept 23"},
-      {t:"Time and location TBD", type:"lunch", cap:6, label:"Lunch with Trainees", k:"group:3", tbd:true,
+      {t:"Time and location TBD", type:"lunch", cap:6, label:"Lunch with Trainees", k:"group:3", tbd:true, day:"Wednesday, Sept 23",
        note:"Details are still being arranged — sign-ups will open once they are confirmed."},
-      {t:"Wednesday, Sept 23 · 4:15pm – 5:15pm", type:"group", k:"group:disc", label:"Group Discussion with Trainees",
+      {t:"4:15pm – 5:15pm", type:"group", k:"group:disc", label:"Group Discussion with Trainees", day:"Wednesday, Sept 23",
        note:"Add your name if you plan to attend."},
-      {t:"Wednesday, Sept 23 · Time and location TBD", type:"dinner", cap:5, label:"Dinner", k:"group:7",
+      {t:"Time and location TBD", type:"dinner", cap:5, label:"Dinner", k:"group:7", day:"Wednesday, Sept 23",
        note:"The host or Emma will email attendees the details."},
       {t:"1:45pm – 2:15pm", type:"11", k:"11:4", day:"Wednesday, Sept 23"},
       {t:"2:15pm – 2:45pm", type:"11", k:"11:5", day:"Wednesday, Sept 23"},
@@ -474,35 +474,47 @@ function showDetail(id){
     <div class="howto"><b>How to sign up:</b> click <b>Sign up</b> next to an open time, then type your name and confirm.
       For lunch and dinner, type your name in the box and click <b>Add</b>. To remove yourself, click <b>Cancel</b> (or the × next to your name).
       <br><span class="howto-note">It may take a few seconds for your name to show up or disappear.</span></div>
-    <div class="sec-title">🗓️ 1-on-1 Meetings</div>
-    <p class="sec-note">All meetings in ${s.office} unless noted. If you need an hour, add your name to two time slots.</p>
-    <div id="slots"></div>`;
-  groups.forEach(g=>{
-    const icon = g.sl.type==="lunch" ? "🍽️ " : g.sl.type==="dinner" ? "🍷 " : "👥 ";
-    const tbdCls = g.sl.tbd ? " tbd" : "";
-    html += `<div class="sec-title${tbdCls}">${icon}${g.sl.label}${ g.sl.tbd ? ` <span class="note-tag">To be confirmed</span>` : "" }</div>`;
-    if(g.sl.note) html += `<p class="sec-note${tbdCls}">${escapeHtml(g.sl.note)}</p>`;
-    html += `<div id="grp-${g.i}"></div>`;
+`;
+
+  /* One block per visit day, in the order the slots are listed: the 1-on-1
+     rows first, then the meals and group sessions for that same day. Slots
+     with no "day" fall into one unlabelled block (single-day visits). */
+  const days = [];
+  s.slots.forEach(sl=>{ const d = sl.day || ""; if(days.indexOf(d) < 0) days.push(d); });
+  let noteShown = false;
+  days.forEach((day, di)=>{
+    const mine = s.slots.map((sl,i)=>({sl,i})).filter(o=> (o.sl.day || "") === day);
+    if(day) html += `<div class="day-title">${escapeHtml(day)}</div>`;
+    if(mine.some(o=> !isGroupSlot(o.sl))){
+      html += `<div class="sec-title">🗓️ 1-on-1 Meetings</div>`;
+      if(!noteShown){
+        noteShown = true;
+        html += `<p class="sec-note">All meetings in ${s.office} unless noted. If you need an hour, add your name to two time slots.</p>`;
+      }
+      html += `<div class="slots" id="slots-${di}"></div>`;
+    }
+    mine.filter(o=> isGroupSlot(o.sl)).forEach(g=>{
+      const icon = g.sl.type==="lunch" ? "🍽️ " : g.sl.type==="dinner" ? "🍷 " : "👥 ";
+      const tbdCls = g.sl.tbd ? " tbd" : "";
+      html += `<div class="sec-title${tbdCls}">${icon}${g.sl.label}${ g.sl.tbd ? ` <span class="note-tag">To be confirmed</span>` : "" }</div>`;
+      if(g.sl.note) html += `<p class="sec-note${tbdCls}">${escapeHtml(g.sl.note)}</p>`;
+      html += `<div id="grp-${g.i}"></div>`;
+    });
   });
   detailView.innerHTML = html;
 
-  // 1-on-1 + seminar rows (in order)
-  const slotsEl = detailView.querySelector("#slots");
+  // 1-on-1 + seminar rows, each into its own day block
   if(!loaded){
-    const n = document.createElement("p"); n.className = "sec-note";
-    n.textContent = "Loading current sign-ups…";
-    slotsEl.appendChild(n);
+    Array.prototype.forEach.call(detailView.querySelectorAll(".slots"), el=>{
+      const n = document.createElement("p"); n.className = "sec-note";
+      n.textContent = "Loading current sign-ups…";
+      el.appendChild(n);
+    });
   }
-  let lastDay = null;
   s.slots.forEach((sl,i)=>{
     if(isGroupSlot(sl)) return;
-    if(sl.day && sl.day !== lastDay){
-      lastDay = sl.day;
-      const h = document.createElement("div");
-      h.className = "day-head";
-      h.textContent = sl.day;
-      slotsEl.appendChild(h);
-    }
+    const slotsEl = detailView.querySelector("#slots-" + days.indexOf(sl.day || ""));
+    if(!slotsEl) return;
     if(sl.type==="seminar"){
       const d = document.createElement("div");
       d.className = "slot seminar";
