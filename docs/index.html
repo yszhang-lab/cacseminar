@@ -23,6 +23,10 @@
     border-bottom:1px solid #f0dfae;color:#7a5b12}
   .banner.live{background:#e8f6ee;border-bottom-color:#bfe3cd;color:#1c6b40}
   .banner.err{background:#fdecec;border-bottom-color:#f0c4c4;color:#9a2b2b}
+  .banner button{margin-left:8px;font:inherit;font-weight:600;border:1px solid currentColor;
+    background:transparent;color:inherit;border-radius:6px;padding:2px 10px;cursor:pointer}
+  .banner button:hover{background:rgba(0,0,0,.06)}
+  .banner button:disabled{opacity:.5;cursor:wait}
   main{padding:26px 0 60px}
   h2.term{font-size:18px;margin:0 0 4px}
   .term-note{color:var(--muted);font-size:13px;margin:0 0 18px}
@@ -117,7 +121,10 @@
   .hidden{display:none}
   .loading{color:var(--muted);font-size:14px;padding:30px 0;text-align:center}
 
-  .modal-bg{position:fixed;inset:0;background:rgba(20,28,42,.45);display:flex;align-items:center;
+  /* long-hand offsets first: `inset` needs Safari 14.1+, and without them the
+     sign-up dialog's backdrop collapses to nothing on older iPhones/Macs */
+  .modal-bg{position:fixed;top:0;right:0;bottom:0;left:0;inset:0;
+    background:rgba(20,28,42,.45);display:flex;align-items:center;
     justify-content:center;z-index:50}
   .modal{background:#fff;border-radius:12px;padding:22px;width:320px;box-shadow:0 20px 50px rgba(0,0,0,.25)}
   .modal h3{margin:0 0 4px;font-size:16px}
@@ -274,19 +281,63 @@ function saveMyName(n){ try{ localStorage.setItem(NKEY, n); }catch(e){} }
 function loadLocal(){ try{ return JSON.parse(localStorage.getItem(LKEY)) || {}; }catch(e){ return {}; } }
 function saveLocal(){ localStorage.setItem(LKEY, JSON.stringify(store)); }
 
-/* --- network helpers (plain fetch; works cross-origin with Apps Script) --- */
-async function apiGet(){
-  const r = await fetch(API_URL, { cache:"no-store" });
-  return r.json();
+/* --- network helpers -----------------------------------------------------
+   A request to Apps Script is answered by a redirect from script.google.com
+   to script.googleusercontent.com. Safari does not always follow that hop —
+   depending on privacy settings, content blockers or Private Relay the fetch
+   can simply never settle, and the page then sat on "Loading…" forever with
+   no way out. Three defences, in order:
+     1. every request has a hard deadline, so nothing can hang;
+     2. if fetch() fails we retry once over XMLHttpRequest, which is a
+        separate network stack in WebKit and often follows the redirect fine;
+     3. cache-busting is done with a query parameter instead of
+        cache:"no-store", which WebKit handles poorly on redirected requests.
+   Whatever happens, the caller gets an answer or an error — never silence.
+-------------------------------------------------------------------------- */
+const NET_TIMEOUT = 10000;
+
+function bust(url){ return url + (url.indexOf("?") < 0 ? "?" : "&") + "t=" + Date.now(); }
+
+function fetchJson(url, body){
+  const ac = (typeof AbortController !== "undefined") ? new AbortController() : null;
+  const timer = setTimeout(function(){ if(ac) ac.abort(); }, NET_TIMEOUT);
+  const opts = ac ? { signal: ac.signal } : {};
+  if(body != null){
+    opts.method  = "POST";
+    opts.headers = { "Content-Type":"text/plain;charset=utf-8" }; // simple request → no CORS preflight
+    opts.body    = body;
+  }
+  return fetch(url, opts).then(function(r){
+    if(!r.ok) throw new Error("HTTP " + r.status);
+    return r.json();
+  }).then(function(v){ clearTimeout(timer); return v; },
+          function(e){ clearTimeout(timer); throw e; });
 }
-async function apiPost(payload){
-  const r = await fetch(API_URL, {
-    method:"POST",
-    headers:{ "Content-Type":"text/plain;charset=utf-8" }, // simple request → no CORS preflight
-    body: JSON.stringify(payload)
+
+function xhrJson(url, body){
+  return new Promise(function(resolve, reject){
+    const x = new XMLHttpRequest();
+    x.open(body != null ? "POST" : "GET", url, true);
+    if(body != null) x.setRequestHeader("Content-Type", "text/plain;charset=utf-8");
+    x.timeout   = NET_TIMEOUT;
+    x.onerror   = function(){ reject(new Error("network error")); };
+    x.ontimeout = function(){ reject(new Error("timeout")); };
+    x.onload    = function(){
+      if(x.status < 200 || x.status >= 300) return reject(new Error("HTTP " + x.status));
+      try { resolve(JSON.parse(x.responseText)); }
+      catch(e){ reject(new Error("unreadable response")); }
+    };
+    x.send(body == null ? null : body);
   });
-  return r.json();
 }
+
+async function request(body){
+  try { return await fetchJson(bust(API_URL), body); }
+  catch(e){ return await xhrJson(bust(API_URL), body); }
+}
+
+async function apiGet(){ return request(null); }
+async function apiPost(payload){ return request(JSON.stringify(payload)); }
 
 /* --- pull the full current state into `store` --- */
 async function refresh(){
@@ -395,7 +446,16 @@ function setBanner(state){
     bannerEl.className = "banner";
     bannerEl.innerHTML = "Demo preview — sign-ups save to <b>this browser only</b>. Add your Google Sheet URL in the file to go live (see setup-guide.md).";
   } else if(state==="err"){
-    bannerEl.textContent = "Can't reach the sign-up sheet right now. Your last view may be out of date — check your connection or the Web App URL.";
+    bannerEl.innerHTML = "Can't reach the sign-up sheet right now — the sign-ups below may be out of date. " +
+      "<button type=\"button\" id=\"retryBtn\">Try again</button>";
+    const rb = bannerEl.querySelector("#retryBtn");
+    rb.onclick = async ()=>{
+      rb.disabled = true;
+      setBanner("loading");
+      await refresh();
+      loaded = true;
+      if(currentId) showDetail(currentId);
+    };
   } else {
     bannerEl.innerHTML = "Connected to the shared Google Sheet — everyone sees the same sign-ups. ✓";
   }
@@ -622,17 +682,27 @@ async function init(){
   renderList();                                   // schedule is static — show it at once
   if(DEMO){ setBanner(""); await refresh(); loaded = true; return; }
   setBanner("loading");
+  // Last-resort watchdog: however the network misbehaves, the page must never
+  // be left sitting on "Loading…" with no explanation and no way to retry.
+  const watchdog = setTimeout(()=>{ if(!loaded) setBanner("err"); }, NET_TIMEOUT * 3);
   await refresh();                                // sign-ups arrive in the background
+  clearTimeout(watchdog);
   loaded = true;
   if(currentId) rerender(currentId);
 }
 init();
 
-// Keep the shared view fresh while people sign up (every 20s, only when live)
+// Keep the shared view fresh while people sign up (every 20s, only when live).
+// `polling` stops a slow request from stacking up behind the previous one.
 if(!DEMO){
+  let polling = false;
   setInterval(async ()=>{
-    await refresh();
-    if(currentId && !detailView.classList.contains("hidden")) showDetail(currentId);
+    if(polling) return;
+    polling = true;
+    try{
+      await refresh();
+      if(currentId && !detailView.classList.contains("hidden")) showDetail(currentId);
+    } finally { polling = false; }
   }, 20000);
 }
 </script>
