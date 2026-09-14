@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Columbia Aging Center Seminar Series — Sign-ups</title>
+<style>
+  :root{
+    --ink:#1a2233; --muted:#5b6577; --line:#e4e7ee; --bg:#f6f7f9;
+    --brand:#0b3d64; --brand2:#12608f; --accent:#0a7d5a; --warn:#b23b3b;
+    --card:#ffffff; --chip:#eef2f7;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    color:var(--ink);background:var(--bg);line-height:1.5}
+  a{color:var(--brand2);text-decoration:none}
+  a:hover{text-decoration:underline}
+  header.site{background:var(--brand);color:#fff;padding:22px 0}
+  .wrap{max-width:980px;margin:0 auto;padding:0 20px}
+  header.site h1{margin:0;font-size:22px;font-weight:650;letter-spacing:.2px}
+  header.site .sub{margin-top:4px;font-size:13.5px;opacity:.85}
+  .banner{font-size:12.5px;padding:8px 0;text-align:center;background:#fff6e0;
+    border-bottom:1px solid #f0dfae;color:#7a5b12}
+  .banner.live{background:#e8f6ee;border-bottom-color:#bfe3cd;color:#1c6b40}
+  .banner.err{background:#fdecec;border-bottom-color:#f0c4c4;color:#9a2b2b}
+  .banner button{margin-left:8px;font:inherit;font-weight:600;border:1px solid currentColor;
+    background:transparent;color:inherit;border-radius:6px;padding:2px 10px;cursor:pointer}
+  .banner button:hover{background:rgba(0,0,0,.06)}
+  .banner button:disabled{opacity:.5;cursor:wait}
+  main{padding:26px 0 60px}
+  h2.term{font-size:18px;margin:0 0 4px}
+  .term-note{color:var(--muted);font-size:13px;margin:0 0 18px}
+
+  table.sched{width:100%;table-layout:fixed;border-collapse:collapse;background:var(--card);
+    border:1px solid var(--line);border-radius:10px;overflow:hidden}
+  table.sched td{overflow-wrap:break-word}
+  table.sched th{background:#eef2f7;text-align:left;font-size:11.5px;text-transform:uppercase;
+    letter-spacing:.5px;color:var(--muted);padding:11px 14px;font-weight:600}
+  table.sched td{padding:13px 14px;border-top:1px solid var(--line);font-size:14px;vertical-align:top}
+  table.sched tr.row{cursor:pointer}
+  table.sched tr.row:hover td{background:#f9fbfd}
+  .spk{font-weight:600;color:var(--brand2)}
+  table.sched tr.row:hover .spk{text-decoration:underline}
+  .aff{color:var(--muted);font-size:12.5px;display:block;margin-top:2px;line-height:1.4}
+  .ttl{color:var(--ink);font-weight:650}
+  .date-cell{white-space:nowrap;font-weight:600;color:var(--brand)}
+  .dow{display:block;font-weight:400;color:var(--muted);font-size:12px}
+
+  .card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:22px;margin-bottom:20px}
+  .spk-name{font-size:22px;font-weight:680;margin:0}
+  .spk-aff{color:var(--muted);font-size:14px;margin:2px 0 12px}
+  .paper{font-style:italic;font-size:15.5px;margin:0 0 16px;color:#2a3548;font-weight:650}
+  .tba{color:#9aa4b2;font-style:italic;font-weight:400}
+  .meta{display:grid;grid-template-columns:110px 1fr;gap:6px 14px;font-size:14px}
+  .meta dt{color:var(--muted)}
+  .meta dd{margin:0}
+
+  .sec-title{font-size:15px;font-weight:650;margin:26px 0 6px;display:flex;align-items:center;gap:8px}
+  .sec-note{color:var(--muted);font-size:12.5px;margin:0 0 12px}
+  .sec-note b{color:var(--ink);font-weight:650}
+
+  .slot{display:flex;align-items:center;gap:12px;padding:11px 14px;border:1px solid var(--line);
+    border-radius:9px;margin-bottom:8px;background:#fff}
+  .slot.filled{background:#f3f8f5;border-color:#cfe6da}
+  .slot .time{width:150px;font-weight:600;font-size:13.5px;color:var(--brand);flex:none}
+  .slot .who{flex:1;font-size:14px}
+  .slot .who .empty{color:#9aa4b2;font-style:italic}
+  .slot .who .name{font-weight:600}
+  .slot .fixed{flex:1;font-size:14px;color:#2a3548;font-weight:600}
+  .slot button{flex:none;border:1px solid var(--brand2);background:#fff;color:var(--brand2);
+    font-size:12.5px;padding:6px 12px;border-radius:7px;cursor:pointer;font-weight:600}
+  .slot button:hover{background:var(--brand2);color:#fff}
+  .slot button:disabled{opacity:.5;cursor:wait}
+  .slot button.cancel{border-color:#cbb;color:var(--warn)}
+  .slot button.cancel:hover{background:var(--warn);color:#fff;border-color:var(--warn)}
+  .slot.seminar{background:#eef4f9;border-color:#cddcea}
+  .day-title{font-size:12.5px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;
+    color:#fff;background:var(--brand);border-radius:8px;padding:9px 14px;margin:26px 0 6px}
+  .day-title + .sec-title{margin-top:14px}
+
+  .sec-title.tbd{color:#9aa4b2}
+  .sec-note.tbd{color:#9aa4b2}
+  .grpbox.tbd{background:#f7f8fa;border-color:#e8ebf0}
+  .grpbox.tbd .grptitle{color:#9aa4b2}
+  .grpbox.tbd .cap{color:#a8b0bc;font-style:italic}
+  .tbd-msg{color:#9aa4b2;font-size:13px;font-style:italic;margin-top:8px}
+
+  .group-list{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 0}
+  .tag{background:var(--chip);border-radius:20px;padding:4px 11px;font-size:12.5px;display:flex;align-items:center;gap:6px}
+  .tag .x{cursor:pointer;color:var(--muted);font-weight:700;background:none;border:0;
+    padding:0;font-family:inherit;font-size:inherit;line-height:1}
+  .tag .x:hover{color:var(--warn)}
+  .grpbox{border:1px solid var(--line);border-radius:9px;padding:14px;background:#fff;margin-bottom:8px}
+  .grphead{display:flex;justify-content:space-between;align-items:center}
+  .grptitle{font-weight:600;font-size:14px}
+  .cap{font-size:12.5px;color:var(--muted)}
+  .cap.full{color:var(--warn);font-weight:600}
+  .addrow{display:flex;gap:8px;margin-top:10px}
+  .addrow input{flex:1;padding:8px 11px;border:1px solid var(--line);border-radius:7px;font-size:13.5px}
+  .addrow input:focus{outline:none;border-color:var(--brand2)}
+  .addrow button{border:none;background:var(--accent);color:#fff;padding:8px 15px;border-radius:7px;
+    font-size:13px;font-weight:600;cursor:pointer}
+  .addrow button:disabled{background:#b8c2cc;cursor:not-allowed}
+
+  .howto{background:#eef4f9;border:1px solid #cddcea;border-left:4px solid var(--brand2);
+    border-radius:8px;padding:11px 14px;font-size:13.5px;color:#2a3548;margin:0 0 18px}
+  .howto b{font-weight:650}
+  .howto-note{color:var(--muted);font-size:12.5px}
+
+  .note-tag{display:inline-block;background:var(--chip);color:var(--muted);border:1px solid var(--line);
+    border-radius:20px;padding:1px 9px;font-size:11.5px;font-weight:600;margin-left:7px;vertical-align:1px}
+
+  .host-name{font-weight:600}
+  .host-mail{font-size:12.5px}
+
+  /* a real <button>, so it is reachable by keyboard; stripped back to look
+     exactly like the plain text link it replaces */
+  .backlink{display:inline-block;margin-bottom:14px;font-size:13.5px;cursor:pointer;
+    background:none;border:0;padding:0;font-family:inherit;color:inherit;line-height:inherit}
+  .backlink:hover{text-decoration:underline}
+  :focus-visible{outline:2px solid var(--brand2);outline-offset:2px}
+  table.sched tr.row:focus-visible{outline:2px solid var(--brand2);outline-offset:-2px}
+  table.sched tr.row:focus-visible td{background:#f9fbfd}
+  .roomhelp{display:flex;gap:10px;align-items:flex-start;margin:16px 0 0;padding:12px 14px;
+    background:#fff;border:1px solid var(--line);border-radius:9px;font-size:14px;color:var(--ink)}
+  .roomhelp .ico{flex:none;font-size:17px;line-height:1.3}
+  .roomhelp b{font-weight:650}
+  .footer{color:var(--muted);font-size:12px;text-align:center;margin-top:40px;line-height:1.7}
+  .hidden{display:none}
+  .loading{color:var(--muted);font-size:14px;padding:30px 0;text-align:center}
+
+  /* long-hand offsets first: `inset` needs Safari 14.1+, and without them the
+     sign-up dialog's backdrop collapses to nothing on older iPhones/Macs */
+  .modal-bg{position:fixed;top:0;right:0;bottom:0;left:0;inset:0;
+    background:rgba(20,28,42,.45);display:flex;align-items:center;
+    justify-content:center;z-index:50}
+  .modal{background:#fff;border-radius:12px;padding:22px;width:320px;box-shadow:0 20px 50px rgba(0,0,0,.25)}
+  .modal h3{margin:0 0 4px;font-size:16px}
+  .modal p{margin:0 0 14px;color:var(--muted);font-size:13px}
+  .modal input{width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:7px;font-size:14px}
+  .modal input:focus{outline:none;border-color:var(--brand2)}
+  .modal .actions{display:flex;gap:8px;justify-content:flex-end;margin-top:16px}
+  .modal .actions button{padding:8px 15px;border-radius:7px;font-size:13px;font-weight:600;cursor:pointer;border:1px solid var(--line);background:#fff}
+  .modal .actions button.primary{background:var(--brand2);color:#fff;border-color:var(--brand2)}
+
+  /* ---- Phones -------------------------------------------------------------
+     table-layout:fixed plus the Date/Speaker/Host column widths leave almost
+     nothing for Title on a narrow screen — it collapsed to one letter per
+     line and the last two headers overlapped. Under 720px the schedule stops
+     being a table and becomes one card per seminar; the detail view relaxes
+     its fixed-width columns to match.
+  ------------------------------------------------------------------------- */
+  @media (max-width: 720px){
+    .wrap{padding:0 14px}
+    header.site{padding:18px 0}
+    header.site h1{font-size:19px}
+
+    table.sched{table-layout:auto;border:0;background:transparent;border-radius:0;overflow:visible}
+    table.sched thead{display:none}
+    table.sched tbody{display:block}
+    table.sched tr.row{display:block;background:var(--card);border:1px solid var(--line);
+      border-radius:10px;padding:13px 15px;margin-bottom:10px}
+    table.sched tr.row:hover td{background:transparent}
+    table.sched tr.row:focus-visible{outline-offset:2px}
+    table.sched td{display:block;border-top:0;padding:0;font-size:14px}
+    table.sched td.date-cell{font-size:12.5px;letter-spacing:.4px;text-transform:uppercase;margin-bottom:5px}
+    table.sched td.date-cell .dow{display:inline;margin-left:6px;font-size:12.5px}
+    table.sched td.ttl{margin-top:7px;font-size:14.5px;line-height:1.45;font-weight:600}
+    table.sched td.host-cell{margin-top:10px;padding-top:9px;border-top:1px solid var(--line);font-size:13px}
+    table.sched td.host-cell::before{content:"Host · ";color:var(--muted);font-weight:400}
+    table.sched td.host-cell .host-name + br{display:none}
+    table.sched td.host-cell .host-mail{margin-left:9px}
+    .spk{font-size:15px}
+
+    .card{padding:17px}
+    .spk-name{font-size:19px}
+    .meta{grid-template-columns:1fr;gap:0}
+    .meta dt{margin-top:9px;font-size:11.5px;text-transform:uppercase;letter-spacing:.4px}
+    .meta dt:first-child{margin-top:0}
+
+    .slot{flex-wrap:wrap;gap:6px 10px;padding:12px 13px}
+    .slot .time{width:auto;flex:1 1 100%}
+    .slot .who{flex:1 1 auto}
+    .slot .fixed{flex:1 1 100%}
+    .slot button{margin-left:auto}
+    .grphead{flex-wrap:wrap;gap:3px 10px}
+    .day-title{font-size:11.5px;padding:8px 12px}
+  }
+</style>
+</head>
+<body>
+<header class="site">
+  <div class="wrap">
+    <h1>Columbia Aging Center — Seminar Series</h1>
+    <div class="sub">Fall 2026 · Sign up for meetings with visiting speakers</div>
+  </div>
+</header>
+<div class="banner" id="banner">Loading…</div>
+
+<main class="wrap">
+  <section id="listView">
+    <h2 class="term">Fall 2026 Schedule</h2>
+    <div class="howto"><b>How to sign up:</b> click anywhere in a speaker's row below to open their visit schedule, then sign up for a 1-on-1 meeting, lunch, or dinner.</div>
+    <table class="sched">
+      <thead>
+        <tr><th style="width:96px">Date</th><th style="width:30%">Speaker</th><th>Title</th><th style="width:140px">Host</th></tr>
+      </thead>
+      <tbody id="listBody"></tbody>
+    </table>
+    <div class="roomhelp"><span class="ico">📍</span><div><b>Need help finding the meeting room or seminar room?</b>
+      Contact the host or Emma Kaishian (<a href="mailto:ek3138@cumc.columbia.edu">ek3138@cumc.columbia.edu</a>).</div></div>
+  </section>
+
+  <section id="detailView" class="hidden"></section>
+
+  <div class="footer">Columbia Aging Center · Times shown in Eastern Time</div>
+</main>
+
+<script>
+/* ============================================================
+   CONFIG — paste your Google Apps Script Web App URL below.
+   Until you do, the site runs in DEMO mode (browser-only).
+   See setup-guide.md for the 5-minute setup.
+   ============================================================ */
+const API_URL = "https://script.google.com/macros/s/AKfycbwW9WEVl-kP0CzOUrpy41ZM_w7mgLurtVzD7s2J2Smc47fSMimczTHMoFgrJdH_bzhr/exec";
+
+/* ---------- Seminar data (edit freely) ----------
+   "affiliation" is a list of lines (title, department, university).
+   Each seminar has an ordered list of slots:
+     type "11"      = a 1-on-1 meeting slot (one person)
+     type "seminar" = fixed talk block (no sign-up)
+     type "lunch"/"dinner" = group meal with a cap
+     type "group"   = open group sign-up (omit "cap" for no limit)
+     "k"            = optional fixed storage key; set it when you insert a slot
+                      so existing sign-ups keep their key
+     "tbd": true    = show the slot greyed out with no sign-up box (details
+                      not settled yet); remove the flag to open sign-ups
+     "day"          = optional heading shown above the slot (e.g. a second
+                      visit day); slots with the same "day" group together
+   Add "titleLink" to a seminar to turn its title into a link on the
+   speaker page (the schedule table keeps the title as plain text, so
+   the whole row stays clickable).
+   IMPORTANT: keep each slot's "t" (time text) stable — it is the
+   storage key. If you rename a slot after people sign up, existing
+   sign-ups for the old name stay under the old key.
+--------------------------------------------------- */
+const SEMINARS = [
+  {
+    id:"speaker1", date:"2026-09-23", dow:"Wed",
+    speaker:"Michael Gurven", affiliation:["Distinguished Professor", "Department of Anthropology", "UC Santa Barbara"],
+    link:"https://gurven.anth.ucsb.edu",
+    title:"Seven Decades: How We Evolved to Live Longer",
+    titleLink:"https://press.princeton.edu/books/hardcover/9780691231990/seven-decades",
+    time:"3:00pm–4:00pm", location:"VEC 405",
+    organizer:"Alan Cohen", organizerEmail:"aac2277@cumc.columbia.edu",
+    office:"CAC Conference Room 419",
+    slots:[
+      {t:"10:00am – 10:30am", type:"11", k:"11:0", day:"Wednesday, Sept 23"},
+      {t:"10:30am – 11:00am", type:"11", k:"11:1", day:"Wednesday, Sept 23"},
+      {t:"11:00am – 11:30am", type:"11", k:"11:2", day:"Wednesday, Sept 23"},
+      {t:"Time and location TBD", type:"lunch", cap:6, label:"Lunch with Trainees", k:"group:3", tbd:true, day:"Wednesday, Sept 23"},
+      {t:"4:15pm – 5:15pm · VEC 405", type:"group", k:"group:disc", label:"Group Discussion with Trainees", day:"Wednesday, Sept 23",
+       note:"Add your name if you plan to attend."},
+      {t:"Time and location TBD", type:"dinner", cap:5, label:"Dinner", k:"group:7", day:"Wednesday, Sept 23",
+       note:"The host or Emma will email attendees the details."},
+      {t:"1:45pm – 2:15pm", type:"11", k:"11:4", day:"Wednesday, Sept 23"},
+      {t:"2:15pm – 2:45pm", type:"11", k:"11:5", day:"Wednesday, Sept 23"},
+      {t:"3:00pm – 4:00pm", type:"seminar", label:"Seminar Presentation · VEC 405", day:"Wednesday, Sept 23"},
+      {t:"10:00am – 10:30am", type:"11", k:"11:d2a", day:"Thursday, Sept 24"},
+      {t:"10:30am – 11:00am", type:"11", k:"11:d2b", day:"Thursday, Sept 24"},
+      {t:"11:00am – 11:30am", type:"11", k:"11:d2c", day:"Thursday, Sept 24"}
+    ]
+  },
+  {
+    id:"speaker2", date:"2026-10-14", dow:"Wed",
+    speaker:"Speaker 2", affiliation:["Postdoctoral Scholar", "Columbia Aging Center"],
+    note:"Internal speaker", signups:false,
+    title:"TBD",
+    time:"3:00pm–4:00pm", location:"CAC Conference Room 419",
+    organizer:"TBD",
+    office:"CAC Conference Room 419",
+    slots:[
+      {t:"10:00am – 10:30am", type:"11", k:"11:0"},
+      {t:"10:30am – 11:00am", type:"11", k:"11:1"},
+      {t:"11:00am – 11:30am", type:"11", k:"11:2"},
+      {t:"12:00pm – 1:30pm", type:"lunch", cap:6, label:"Lunch with Trainees", k:"group:3"},
+      {t:"1:45pm – 2:15pm", type:"11", k:"11:4"},
+      {t:"2:15pm – 2:45pm", type:"11", k:"11:5"},
+      {t:"3:00pm – 4:00pm", type:"seminar", label:"Seminar Presentation"},
+      {t:"Time and location TBD", type:"dinner", cap:5, label:"Dinner", k:"group:7",
+       note:"The host or Emma will email attendees the details."}
+    ]
+  },
+  {
+    id:"speaker3", date:"2026-12-02", dow:"Wed",
+    speaker:"Lauren H. Nicholas", affiliation:["Health Economist", "Professor of Medicine (Geriatrics)", "University of Colorado Anschutz"],
+    link:"https://www.cuanschutz.edu/centers/bioethicshumanities/engage-and-explore/team/Nicholas-Lauren-H--EXTHT9UEG",
+    title:"TBD",
+    time:"3:00pm–4:00pm", location:"CAC Conference Room 419",
+    organizer:"Yuan Zhang", organizerEmail:"yuan.zhang@columbia.edu",
+    office:"CAC Conference Room 419",
+    slots:[
+      {t:"10:00am – 10:30am", type:"11", k:"11:0"},
+      {t:"10:30am – 11:00am", type:"11", k:"11:1"},
+      {t:"11:00am – 11:30am", type:"11", k:"11:2"},
+      {t:"12:00pm – 1:30pm", type:"lunch", cap:6, label:"Lunch with Trainees", k:"group:3"},
+      {t:"1:45pm – 2:15pm", type:"11", k:"11:4"},
+      {t:"2:15pm – 2:45pm", type:"11", k:"11:5"},
+      {t:"3:00pm – 4:00pm", type:"seminar", label:"Seminar Presentation"},
+      {t:"Time and location TBD", type:"dinner", cap:5, label:"Dinner", k:"group:7",
+       note:"The host or Emma will email attendees the details."}
+    ]
+  }
+];
+
+/* ---------- Storage layer (Google Sheet API or demo) ---------- */
+const DEMO = !API_URL || API_URL.indexOf("PASTE_YOUR") === 0;
+const LKEY = "seminar_signups_v1";
+let store = {};                 // { seminarId: { slotKey: name | [names] } }
+let currentId = null;           // seminar being viewed, for polling refresh
+
+function isGroupSlot(sl){ return sl.type==="lunch" || sl.type==="dinner" || sl.type==="group"; }
+function slotKeyFor(sl, i){ return sl.k || ((isGroupSlot(sl) ? "group:" : "11:") + i); }
+function isGroupKey(k){ return k.indexOf("group:") === 0; }
+function semStore(id){ if(!store[id]) store[id]={}; return store[id]; }
+
+/* --- remember the last name typed, so it is pre-filled next time (this browser only) --- */
+const NKEY = "seminar_my_name";
+function myName(){ try{ return localStorage.getItem(NKEY) || ""; }catch(e){ return ""; } }
+function saveMyName(n){ try{ localStorage.setItem(NKEY, n); }catch(e){} }
+
+/* --- demo (localStorage) helpers --- */
+function loadLocal(){ try{ return JSON.parse(localStorage.getItem(LKEY)) || {}; }catch(e){ return {}; } }
+function saveLocal(){ localStorage.setItem(LKEY, JSON.stringify(store)); }
+
+/* --- network helpers -----------------------------------------------------
+   A request to Apps Script is answered by a redirect from script.google.com
+   to script.googleusercontent.com. Safari does not always follow that hop —
+   depending on privacy settings, content blockers or Private Relay the fetch
+   can simply never settle, and the page then sat on "Loading…" forever with
+   no way out. Three defences, in order:
+     1. every request has a hard deadline, so nothing can hang;
+     2. if fetch() fails we retry once over XMLHttpRequest, which is a
+        separate network stack in WebKit and often follows the redirect fine;
+     3. cache-busting is done with a query parameter instead of
+        cache:"no-store", which WebKit handles poorly on redirected requests.
+   Whatever happens, the caller gets an answer or an error — never silence.
+-------------------------------------------------------------------------- */
+const NET_TIMEOUT = 10000;
+
+function bust(url){ return url + (url.indexOf("?") < 0 ? "?" : "&") + "t=" + Date.now(); }
+
+function fetchJson(url, body){
+  const ac = (typeof AbortController !== "undefined") ? new AbortController() : null;
+  const timer = setTimeout(function(){ if(ac) ac.abort(); }, NET_TIMEOUT);
+  const opts = ac ? { signal: ac.signal } : {};
+  if(body != null){
+    opts.method  = "POST";
+    opts.headers = { "Content-Type":"text/plain;charset=utf-8" }; // simple request → no CORS preflight
+    opts.body    = body;
+  }
+  return fetch(url, opts).then(function(r){
+    if(!r.ok) throw new Error("HTTP " + r.status);
+    return r.json();
+  }).then(function(v){ clearTimeout(timer); return v; },
+          function(e){ clearTimeout(timer); throw e; });
+}
+
+function xhrJson(url, body){
+  return new Promise(function(resolve, reject){
+    const x = new XMLHttpRequest();
+    x.open(body != null ? "POST" : "GET", url, true);
+    if(body != null) x.setRequestHeader("Content-Type", "text/plain;charset=utf-8");
+    x.timeout   = NET_TIMEOUT;
+    x.onerror   = function(){ reject(new Error("network error")); };
+    x.ontimeout = function(){ reject(new Error("timeout")); };
+    x.onload    = function(){
+      if(x.status < 200 || x.status >= 300) return reject(new Error("HTTP " + x.status));
+      try { resolve(JSON.parse(x.responseText)); }
+      catch(e){ reject(new Error("unreadable response")); }
+    };
+    x.send(body == null ? null : body);
+  });
+}
+
+async function request(body){
+  try { return await fetchJson(bust(API_URL), body); }
+  catch(e){ return await xhrJson(bust(API_URL), body); }
+}
+
+async function apiGet(){ return request(null); }
+async function apiPost(payload){ return request(JSON.stringify(payload)); }
+
+/* --- pull the full current state into `store` --- */
+async function refresh(){
+  if(DEMO){ store = loadLocal(); return true; }
+  try{
+    const d = await apiGet();
+    if(!d || !d.ok) throw new Error("bad response");
+    const next = {};
+    (d.signups || []).forEach(s=>{
+      const b = next[s.seminar_id] || (next[s.seminar_id] = {});
+      if(isGroupKey(s.slot_key)){ (b[s.slot_key] = b[s.slot_key] || []).push(s.name); }
+      else { b[s.slot_key] = s.name; }
+    });
+    applyPending(next);
+    store = next;
+    setBanner("live");
+    return true;
+  }catch(e){
+    setBanner("err");
+    return false;
+  }
+}
+
+/* --- mutations ---------------------------------------------------------
+   The screen updates immediately and the Google Sheet is written in the
+   background, so nobody waits on the round trip. Anything not yet confirmed
+   lives in `pending` and is re-applied on top of each refresh, so a poll that
+   lands mid-write can't make a name flicker away. If the write fails, the
+   change is rolled back and the person is told.
+------------------------------------------------------------------------ */
+let pending = [];      // [{sid, key, name, op:"add"|"remove"}]
+
+function applyOne(target, p){
+  const b = target[p.sid] || (target[p.sid] = {});
+  if(p.op === "add"){
+    if(isGroupKey(p.key)){ const a = b[p.key] = b[p.key] || []; if(a.indexOf(p.name) < 0) a.push(p.name); }
+    else { b[p.key] = p.name; }
+  } else {
+    if(isGroupKey(p.key)){ const a = b[p.key] || []; const ix = a.indexOf(p.name); if(ix >= 0) a.splice(ix,1); }
+    else if(b[p.key] === p.name){ delete b[p.key]; }
+  }
+}
+function applyPending(target){ pending.forEach(p=> applyOne(target, p)); }
+function undo(p){
+  applyOne(store, { sid:p.sid, key:p.key, name:p.name, op: p.op==="add" ? "remove" : "add" });
+}
+function rerender(sid){
+  if(currentId === sid && !detailView.classList.contains("hidden")) showDetail(sid);
+}
+function sync(p, payload, failMsg){
+  pending.push(p);
+  const done = ()=>{ pending = pending.filter(x=> x !== p); rerender(p.sid); };
+  apiPost(payload).then(res=>{
+    if(!res || !res.ok){ undo(p); alert(failMsg(res && res.error)); }
+    done();
+  }).catch(()=>{
+    undo(p); done();
+    alert("Couldn't reach the sign-up sheet — that change wasn't saved. Please try again.");
+  });
+}
+
+async function addSignup(sid, key, name, opts){
+  opts = opts || {};
+  const st = semStore(sid);
+  if(isGroupKey(key)){
+    const a = st[key] || [];
+    if(opts.cap && a.length >= opts.cap){ alert("Sorry, this is now full."); return false; }
+    if(a.indexOf(name) >= 0){ alert("That name is already on this list."); return false; }
+  } else if(st[key]){
+    alert("That slot was just taken.");
+    return false;
+  }
+  const p = { sid:sid, key:key, name:name, op:"add" };
+  applyOne(store, p);
+  if(DEMO){ saveLocal(); return true; }
+  sync(p, { action:"add", seminar_id:sid, slot_key:key, name:name,
+            single: !isGroupKey(key), cap: opts.cap || 0 }, errMsg);
+  return true;
+}
+async function removeSignup(sid, key, name){
+  semStore(sid);
+  const p = { sid:sid, key:key, name:name, op:"remove" };
+  applyOne(store, p);
+  if(DEMO){ saveLocal(); return true; }
+  sync(p, { action:"remove", seminar_id:sid, slot_key:key, name:name },
+       ()=> "Couldn't remove that name — please try again.");
+  return true;
+}
+function errMsg(e){
+  if(e==="full") return "Sorry, this is now full.";
+  if(e==="taken") return "That slot was just taken by someone else.";
+  if(e==="duplicate") return "That name is already on this list.";
+  return "Something went wrong — please try again.";
+}
+
+/* ---------- Views ---------- */
+const listView = document.getElementById("listView");
+const detailView = document.getElementById("detailView");
+const listBody = document.getElementById("listBody");
+const bannerEl = document.getElementById("banner");
+
+function setBanner(state){
+  bannerEl.className = "banner" + (state==="live"?" live":state==="err"?" err":"");
+  if(state==="loading" && !DEMO){ bannerEl.textContent = "Loading current sign-ups…"; return; }
+  if(DEMO){
+    bannerEl.className = "banner";
+    bannerEl.innerHTML = "Demo preview — sign-ups save to <b>this browser only</b>. Add your Google Sheet URL in the file to go live (see setup-guide.md).";
+  } else if(state==="err"){
+    bannerEl.innerHTML = "Can't reach the sign-up sheet right now — the sign-ups below may be out of date. " +
+      "<button type=\"button\" id=\"retryBtn\">Try again</button>";
+    const rb = bannerEl.querySelector("#retryBtn");
+    rb.onclick = async ()=>{
+      rb.disabled = true;
+      setBanner("loading");
+      await refresh();
+      loaded = true;
+      if(currentId) showDetail(currentId);
+    };
+  } else {
+    bannerEl.innerHTML = "Connected to the shared Google Sheet — everyone sees the same sign-ups. ✓";
+  }
+}
+
+function titleHtml(s, withLink){
+  const t = (s.title || "").trim();
+  if(!t || /^tbd$/i.test(t)) return `<span class="tba">Title to be announced</span>`;
+  const esc = escapeHtml(t);
+  return (withLink && s.titleLink)
+    ? `<a href="${encodeURI(s.titleLink)}" target="_blank" rel="noopener">${esc}</a>`
+    : esc;
+}
+function affHtml(s){
+  const a = Array.isArray(s.affiliation) ? s.affiliation : [s.affiliation || ""];
+  return a.map(escapeHtml).join("<br>");
+}
+function hostCell(s){
+  const nm = `<span class="host-name">${escapeHtml(s.organizer || "TBD")}</span>`;
+  if(!s.organizerEmail) return nm;
+  return `${nm}<br><a class="host-mail" href="mailto:${encodeURI(s.organizerEmail)}">Email</a>`;
+}
+function hostDetail(s){
+  const nm = escapeHtml(s.organizer || "TBD");
+  if(!s.organizerEmail) return nm;
+  return `${nm} &middot; <a href="mailto:${encodeURI(s.organizerEmail)}">${escapeHtml(s.organizerEmail)}</a>`;
+}
+
+function fmtDate(d){
+  const [y,m,day] = d.split("-").map(Number);
+  return new Date(y, m-1, day).toLocaleDateString("en-US",{month:"short",day:"numeric"});
+}
+
+function renderList(){
+  listBody.innerHTML = "";
+  SEMINARS.forEach(s=>{
+    const tr = document.createElement("tr");
+    tr.className = "row";
+    tr.tabIndex = 0;                                   // reachable by keyboard
+    tr.setAttribute("role", "button");
+    tr.setAttribute("aria-label", `${s.speaker}, ${fmtDate(s.date)} \u2014 open visit schedule`);
+    tr.onclick = ()=> showDetail(s.id);
+    tr.onkeydown = e=>{
+      if(e.key === "Enter" || e.key === " " || e.key === "Spacebar"){ e.preventDefault(); showDetail(s.id); }
+    };
+    tr.innerHTML = `
+      <td class="date-cell">${fmtDate(s.date)}<span class="dow">${escapeHtml(s.dow)}</span></td>
+      <td><span class="spk">${escapeHtml(s.speaker)}</span>${ s.note ? `<span class="note-tag">${escapeHtml(s.note)}</span>` : "" }<span class="aff">${affHtml(s)}</span></td>
+      <td class="ttl">${titleHtml(s)}</td>
+      <td class="host-cell">${hostCell(s)}</td>`;
+    listBody.appendChild(tr);
+  });
+}
+
+function showList(){ currentId=null; detailView.classList.add("hidden"); listView.classList.remove("hidden"); window.scrollTo(0,0); }
+
+function showDetail(id){
+  const s = SEMINARS.find(x=>x.id===id);
+  if(!s) return;
+  const keepTyping = captureInputs();   // this view is about to be rebuilt
+  currentId = id;
+  const st = semStore(id);
+  listView.classList.add("hidden");
+  detailView.classList.remove("hidden");
+  window.scrollTo(0,0);
+
+  const groups = s.slots.map((sl,i)=>({sl,i})).filter(o=> isGroupSlot(o.sl));
+
+  let html = `
+    <button type="button" class="backlink" onclick="showList()">← All seminars</button>
+    <div class="card">
+      <h2 class="spk-name">${ s.link ? `<a href="${encodeURI(s.link)}" target="_blank" rel="noopener">${escapeHtml(s.speaker)}</a>` : escapeHtml(s.speaker) }${ s.note ? `<span class="note-tag">${escapeHtml(s.note)}</span>` : "" }</h2>
+      <div class="spk-aff">${affHtml(s)}</div>
+      <p class="paper">${titleHtml(s, true)}</p>
+      <dl class="meta">
+        <dt>Date</dt><dd>${fmtDate(s.date)}, ${s.date.slice(0,4)} (${escapeHtml(s.dow)})</dd>
+        <dt>Seminar</dt><dd>${escapeHtml(s.time)}</dd>
+        <dt>Location</dt><dd>${escapeHtml(s.location)}</dd>
+        <dt>Host</dt><dd>${hostDetail(s)}</dd>
+        <dt>Room help</dt><dd>Need help finding the meeting room or seminar room? Contact the host or Emma Kaishian (<a href="mailto:ek3138@cumc.columbia.edu">ek3138@cumc.columbia.edu</a>).</dd>
+      </dl>
+    </div>`;
+
+  if(s.signups === false){
+    html += `<div class="howto">Internal seminar &mdash; no sign-up sheet for this one. Everyone is welcome at the talk itself.</div>`;
+    detailView.innerHTML = html;
+    return;
+  }
+
+  html += `
+    <div class="howto"><b>How to sign up:</b> click <b>Sign up</b> next to an open time, then type your name and confirm.
+      For lunch and dinner, type your name in the box and click <b>Add</b>. To remove yourself, click <b>Cancel</b> (or the × next to your name).
+      <br><span class="howto-note">It may take a few seconds for your name to show up or disappear.</span></div>
+`;
+
+  /* One block per visit day, in the order the slots are listed: the 1-on-1
+     rows first, then the meals and group sessions for that same day. Slots
+     with no "day" fall into one unlabelled block (single-day visits). */
+  const days = [];
+  s.slots.forEach(sl=>{ const d = sl.day || ""; if(days.indexOf(d) < 0) days.push(d); });
+  days.forEach((day, di)=>{
+    const mine = s.slots.map((sl,i)=>({sl,i})).filter(o=> (o.sl.day || "") === day);
+    if(day) html += `<div class="day-title">${escapeHtml(day)}</div>`;
+    if(mine.some(o=> !isGroupSlot(o.sl))){
+      html += `<div class="sec-title">🗓️ 1-on-1 Meetings</div>`;
+      html += `<p class="sec-note">All meetings in ${escapeHtml(s.office)} unless noted. <b>If you need an hour, add your name to two time slots.</b></p>`;
+      html += `<div class="slots" id="slots-${di}"></div>`;
+    }
+    mine.filter(o=> isGroupSlot(o.sl)).forEach(g=>{
+      const icon = g.sl.type==="lunch" ? "🍽️ " : g.sl.type==="dinner" ? "🍷 " : "👥 ";
+      const tbdCls = g.sl.tbd ? " tbd" : "";
+      html += `<div class="sec-title${tbdCls}">${icon}${escapeHtml(g.sl.label || "")}${ g.sl.tbd ? ` <span class="note-tag">To be confirmed</span>` : "" }</div>`;
+      if(g.sl.note) html += `<p class="sec-note${tbdCls}">${escapeHtml(g.sl.note)}</p>`;
+      html += `<div id="grp-${g.i}"></div>`;
+    });
+  });
+  detailView.innerHTML = html;
+
+  // 1-on-1 + seminar rows, each into its own day block
+  if(!loaded){
+    Array.prototype.forEach.call(detailView.querySelectorAll(".slots"), el=>{
+      const n = document.createElement("p"); n.className = "sec-note";
+      n.textContent = "Loading current sign-ups…";
+      el.appendChild(n);
+    });
+  }
+  s.slots.forEach((sl,i)=>{
+    if(isGroupSlot(sl)) return;
+    const slotsEl = detailView.querySelector("#slots-" + days.indexOf(sl.day || ""));
+    if(!slotsEl) return;
+    if(sl.type==="seminar"){
+      const d = document.createElement("div");
+      d.className = "slot seminar";
+      d.innerHTML = `<div class="time">${escapeHtml(sl.t)}</div><div class="fixed">${escapeHtml(sl.label || "")}</div>`;
+      slotsEl.appendChild(d);
+      return;
+    }
+    const key = slotKeyFor(sl,i), name = st[key];
+    const d = document.createElement("div");
+    d.className = "slot" + (name?" filled":"");
+    d.innerHTML = `<div class="time">${escapeHtml(sl.t)}</div>
+      <div class="who">${ name ? `<span class="name">${escapeHtml(name)}</span>` : `<span class="empty">Available</span>` }</div>`;
+    const btn = document.createElement("button");
+    if(name){
+      btn.className = "cancel"; btn.textContent = "Cancel";
+      btn.onclick = async ()=>{ btn.disabled=true; await removeSignup(id,key,name); showDetail(id); };
+    } else {
+      btn.textContent = "Sign up";
+      btn.onclick = ()=> askName(`${sl.t} with ${s.speaker}`, async nm=>{ await addSignup(id,key,nm); showDetail(id); });
+    }
+    d.appendChild(btn);
+    slotsEl.appendChild(d);
+  });
+
+  // group meals
+  groups.forEach(g=>{
+    const box = detailView.querySelector("#grp-"+g.i);
+    const key = slotKeyFor(g.sl, g.i);
+    const arr = st[key] || [];
+    const full = g.sl.cap ? arr.length >= g.sl.cap : false;
+    const wrap = document.createElement("div");
+    wrap.className = "grpbox" + (g.sl.tbd ? " tbd" : "");
+    if(g.sl.tbd){
+      wrap.innerHTML = `<div class="grphead">
+          <span class="grptitle">${escapeHtml(g.sl.t)}</span>
+          <span class="cap">Sign-ups not open yet</span>
+        </div>
+        <div class="tbd-msg">Check back later.</div>`;
+      box.appendChild(wrap);
+      return;
+    }
+    wrap.innerHTML = `<div class="grphead">
+        <span class="grptitle">${escapeHtml(g.sl.t)}</span>
+        <span class="cap${full?" full":""}">${ g.sl.cap ? `${arr.length} / ${g.sl.cap} spots ${full?"— full":"filled"}` : `${arr.length} signed up` }</span>
+      </div>`;
+    const list = document.createElement("div"); list.className = "group-list";
+    if(arr.length===0){
+      const e = document.createElement("span");
+      e.style.cssText = "color:#9aa4b2;font-size:13px;font-style:italic";
+      e.textContent = "No sign-ups yet";
+      list.appendChild(e);
+    }
+    arr.forEach(nm=>{
+      const tag = document.createElement("span"); tag.className = "tag";
+      tag.innerHTML = `${escapeHtml(nm)} <button type="button" class="x" title="Remove" aria-label="Remove ${escapeHtml(nm)}">×</button>`;
+      tag.querySelector(".x").onclick = async ()=>{ await removeSignup(id,key,nm); showDetail(id); };
+      list.appendChild(tag);
+    });
+    wrap.appendChild(list);
+    const row = document.createElement("div"); row.className = "addrow";
+    const inp = document.createElement("input");
+    inp.placeholder = "Your name"; inp.disabled = full;
+    inp.dataset.key = key;                             // lets a re-render put the text back
+    inp.setAttribute("aria-label", `Your name for ${g.sl.label || g.sl.t}`);
+    const add = document.createElement("button"); add.textContent = "Add"; add.disabled = full;
+    const go = async ()=>{
+      const v = inp.value.trim(); if(!v) return;
+      saveMyName(v);
+      add.disabled = true;
+      await addSignup(id,key,v,{cap:g.sl.cap||0});
+      showDetail(id);
+    };
+    add.onclick = go;
+    inp.onkeydown = e=>{ if(e.key==="Enter") go(); };
+    row.appendChild(inp); row.appendChild(add);
+    wrap.appendChild(row);
+    box.appendChild(wrap);
+  });
+
+  restoreInputs(keepTyping);
+}
+
+/* ---------- Keep the person's work across a re-render ---------------------
+   showDetail() rebuilds the whole detail view, and the 20-second poll calls
+   it. Without the two helpers below, a name being typed into a lunch or
+   dinner box is wiped mid-word and the caret jumps away. Typed text is
+   carried across every rebuild, and while someone is actually typing (or the
+   sign-up dialog is open) the poll leaves the screen alone entirely.
+-------------------------------------------------------------------------- */
+function uiBusy(){
+  if(document.querySelector(".modal-bg")) return true;          // sign-up dialog open
+  const a = document.activeElement;
+  return !!(a && a.tagName === "INPUT" && detailView.contains(a));
+}
+function captureInputs(){
+  const state = {};
+  Array.prototype.forEach.call(detailView.querySelectorAll(".addrow input"), el=>{
+    if(!el.dataset.key) return;
+    state[el.dataset.key] = {
+      value: el.value,
+      focused: el === document.activeElement,
+      start: el.selectionStart,
+      end: el.selectionEnd
+    };
+  });
+  return state;
+}
+function restoreInputs(state){
+  if(!state) return;
+  Array.prototype.forEach.call(detailView.querySelectorAll(".addrow input"), el=>{
+    const s = state[el.dataset.key];
+    if(!s || !s.value) return;
+    el.value = s.value;
+    if(s.focused){
+      el.focus();
+      try{ el.setSelectionRange(s.start, s.end); }catch(e){}
+    }
+  });
+}
+
+/* ---------- Name modal ---------- */
+function askName(what, cb){
+  const bg = document.createElement("div"); bg.className = "modal-bg";
+  bg.innerHTML = `<div class="modal">
+    <h3>Sign up</h3><p>${escapeHtml(what)}<br>Enter your name for this slot.</p>
+    <input id="nmInput" placeholder="Your name" autocomplete="name">
+    <div class="actions"><button id="nmCancel">Cancel</button><button class="primary" id="nmOk">Confirm</button></div>
+  </div>`;
+  document.body.appendChild(bg);
+  const inp = bg.querySelector("#nmInput"); inp.value = myName(); inp.focus(); inp.select();
+  const close = ()=> document.body.removeChild(bg);
+  const ok = ()=>{ const v = inp.value.trim(); if(!v){ inp.focus(); return; } saveMyName(v); close(); cb(v); };
+  bg.querySelector("#nmOk").onclick = ok;
+  bg.querySelector("#nmCancel").onclick = close;
+  inp.onkeydown = e=>{ if(e.key==="Enter") ok(); if(e.key==="Escape") close(); };
+  bg.onclick = e=>{ if(e.target===bg) close(); };
+}
+
+function escapeHtml(s){ return String(s).replace(/[&<>"']/g, c=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c])); }
+
+/* ---------- Init + live polling ---------- */
+let loaded = false;             // first read of the sheet finished?
+async function init(){
+  renderList();                                   // schedule is static — show it at once
+  if(DEMO){ setBanner(""); await refresh(); loaded = true; return; }
+  setBanner("loading");
+  // Last-resort watchdog: however the network misbehaves, the page must never
+  // be left sitting on "Loading…" with no explanation and no way to retry.
+  const watchdog = setTimeout(()=>{ if(!loaded) setBanner("err"); }, NET_TIMEOUT * 3);
+  await refresh();                                // sign-ups arrive in the background
+  clearTimeout(watchdog);
+  loaded = true;
+  if(currentId) rerender(currentId);
+}
+init();
+
+// Keep the shared view fresh while people sign up (every 20s, only when live).
+// `polling` stops a slow request from stacking up behind the previous one.
+if(!DEMO){
+  let polling = false;
+  setInterval(async ()=>{
+    if(polling) return;
+    polling = true;
+    try{
+      await refresh();
+      if(currentId && !detailView.classList.contains("hidden") && !uiBusy()) showDetail(currentId);
+    } finally { polling = false; }
+  }, 20000);
+}
+</script>
+</body>
+</html>
