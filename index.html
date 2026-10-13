@@ -38,6 +38,8 @@
     letter-spacing:.5px;color:var(--muted);padding:11px 14px;font-weight:600}
   table.sched td{padding:13px 14px;border-top:1px solid var(--line);font-size:14px;vertical-align:top}
   table.sched tr.row{cursor:pointer}
+  table.sched tr.term-row td{background:var(--card);color:var(--muted);font-weight:650;
+    font-size:12px;letter-spacing:.6px;text-transform:uppercase;padding:9px 14px}
   table.sched tr.row:hover td{background:#f9fbfd}
   .spk{font-weight:600;color:var(--brand2)}
   table.sched tr.row:hover .spk{text-decoration:underline}
@@ -161,6 +163,9 @@
     table.sched tr.row{display:block;background:var(--card);border:1px solid var(--line);
       border-radius:10px;padding:13px 15px;margin-bottom:10px}
     table.sched tr.row:hover td{background:transparent}
+    table.sched tr.term-row{display:block;margin:16px 0 8px}
+    table.sched tr.term-row:first-child{margin-top:0}
+    table.sched tr.term-row td{display:block;background:transparent;padding:0;font-size:12px}
     table.sched tr.row:focus-visible{outline-offset:2px}
     table.sched td{display:block;border-top:0;padding:0;font-size:14px}
     table.sched td.date-cell{font-size:12.5px;letter-spacing:.4px;text-transform:uppercase;margin-bottom:5px}
@@ -192,14 +197,14 @@
 <header class="site">
   <div class="wrap">
     <h1>Columbia Aging Center — Seminar Series</h1>
-    <div class="sub">Fall 2026 · Sign up for meetings with visiting speakers</div>
+    <div class="sub">Fall 2026 – Spring 2027 · Sign up for meetings with visiting speakers</div>
   </div>
 </header>
 <div class="banner" id="banner">Loading…</div>
 
 <main class="wrap">
   <section id="listView">
-    <h2 class="term">Fall 2026 Schedule</h2>
+    <h2 class="term">2026–27 Schedule</h2>
     <div class="howto"><b>How to sign up:</b> click anywhere in a speaker's row below to open their visit schedule, then sign up for a 1-on-1 meeting, lunch, or dinner.</div>
     <table class="sched">
       <thead>
@@ -246,7 +251,7 @@ const API_URL = "https://script.google.com/macros/s/AKfycbwW9WEVl-kP0CzOUrpy41ZM
 --------------------------------------------------- */
 const SEMINARS = [
   {
-    id:"speaker1", date:"2026-09-23", dow:"Wed",
+    id:"speaker1", date:"2026-09-23", dow:"Wed", term:"Fall 2026",
     speaker:"Michael Gurven", affiliation:["Distinguished Professor", "Department of Anthropology", "UC Santa Barbara"],
     link:"https://gurven.anth.ucsb.edu",
     title:"Seven Decades: How We Evolved to Live Longer",
@@ -272,7 +277,7 @@ const SEMINARS = [
     ]
   },
   {
-    id:"speaker2", date:"2026-10-14", dow:"Wed",
+    id:"speaker2", date:"2026-10-14", dow:"Wed", term:"Fall 2026",
     speaker:"Speaker 2", affiliation:["Postdoctoral Scholar", "Columbia Aging Center"],
     note:"Internal speaker", signups:false,
     title:"TBD",
@@ -292,7 +297,7 @@ const SEMINARS = [
     ]
   },
   {
-    id:"speaker3", date:"2026-12-02", dow:"Wed",
+    id:"speaker3", date:"2026-12-02", dow:"Wed", term:"Fall 2026",
     speaker:"Lauren H. Nicholas", affiliation:["Health Economist", "Professor of Medicine (Geriatrics)", "University of Colorado Anschutz"],
     link:"https://www.cuanschutz.edu/centers/bioethicshumanities/engage-and-explore/team/Nicholas-Lauren-H--EXTHT9UEG",
     title:"TBD",
@@ -309,6 +314,86 @@ const SEMINARS = [
       {t:"2:15pm – 2:45pm", type:"11", k:"11:5"},
       {t:"3:00pm – 4:00pm", type:"seminar", label:"Seminar Presentation · ARB Student Lounge (TBD)"},
       {t:"5:00pm · Location TBD", type:"dinner", cap:5, label:"Dinner", k:"group:7",
+       note:"The host or Emma will email attendees the details."}
+    ]
+  },
+  {
+    id:"speaker4", date:"2027-01-27", dow:"Wed", term:"Spring 2027",
+    speaker:"Virginia Chang", affiliation:["Social and Behavioral Sciences", "NYU School of Global Public Health"],
+    title:"TBD",
+    time:"3:00pm–4:00pm", location:"CAC Conference Room 419",
+    organizer:"Yuan Zhang", organizerEmail:"yuan.zhang@columbia.edu",
+    office:"CAC Conference Room 419",
+    slots:[
+      {t:"9:30am – 10:00am", type:"11", k:"11:930"},
+      {t:"10:00am – 10:30am", type:"11", k:"11:0"},
+      {t:"10:30am – 11:00am", type:"11", k:"11:1"},
+      {t:"11:00am – 11:30am", type:"11", k:"11:2"},
+      {t:"12:00pm – 1:30pm", type:"lunch", cap:6, label:"Lunch with Trainees", k:"group:3"},
+      {t:"1:45pm – 2:15pm", type:"11", k:"11:4"},
+      {t:"2:15pm – 2:45pm", type:"11", k:"11:5"},
+      {t:"3:00pm – 4:00pm", type:"seminar", label:"Seminar Presentation"},
+      {t:"Time and location TBD", type:"dinner", cap:5, label:"Dinner", k:"group:7",
+       note:"The host or Emma will email attendees the details."}
+    ]
+  },
+  {
+    id:"speaker5", date:"2027-02-24", dow:"Wed", term:"Spring 2027",
+    speaker:"Chandra A. Reynolds", affiliation:["Institute for Behavioral Genetics", "Department of Psychology & Neuroscience", "University of Colorado Boulder"],
+    title:"TBD",
+    time:"3:00pm–4:00pm", location:"CAC Conference Room 419",
+    organizer:"Yuan Zhang", organizerEmail:"yuan.zhang@columbia.edu",
+    office:"CAC Conference Room 419",
+    slots:[
+      {t:"9:30am – 10:00am", type:"11", k:"11:930"},
+      {t:"10:00am – 10:30am", type:"11", k:"11:0"},
+      {t:"10:30am – 11:00am", type:"11", k:"11:1"},
+      {t:"11:00am – 11:30am", type:"11", k:"11:2"},
+      {t:"12:00pm – 1:30pm", type:"lunch", cap:6, label:"Lunch with Trainees", k:"group:3"},
+      {t:"1:45pm – 2:15pm", type:"11", k:"11:4"},
+      {t:"2:15pm – 2:45pm", type:"11", k:"11:5"},
+      {t:"3:00pm – 4:00pm", type:"seminar", label:"Seminar Presentation"},
+      {t:"Time and location TBD", type:"dinner", cap:5, label:"Dinner", k:"group:7",
+       note:"The host or Emma will email attendees the details."}
+    ]
+  },
+  {
+    id:"speaker6", date:"2027-03-24", dow:"Wed", term:"Spring 2027",
+    speaker:"Jonathan Skinner", affiliation:["Department of Economics, Dartmouth College", "Yale University School of Public Health"],
+    title:"TBD",
+    time:"3:00pm–4:00pm", location:"CAC Conference Room 419",
+    organizer:"Yuan Zhang", organizerEmail:"yuan.zhang@columbia.edu",
+    office:"CAC Conference Room 419",
+    slots:[
+      {t:"9:30am – 10:00am", type:"11", k:"11:930"},
+      {t:"10:00am – 10:30am", type:"11", k:"11:0"},
+      {t:"10:30am – 11:00am", type:"11", k:"11:1"},
+      {t:"11:00am – 11:30am", type:"11", k:"11:2"},
+      {t:"12:00pm – 1:30pm", type:"lunch", cap:6, label:"Lunch with Trainees", k:"group:3"},
+      {t:"1:45pm – 2:15pm", type:"11", k:"11:4"},
+      {t:"2:15pm – 2:45pm", type:"11", k:"11:5"},
+      {t:"3:00pm – 4:00pm", type:"seminar", label:"Seminar Presentation"},
+      {t:"Time and location TBD", type:"dinner", cap:5, label:"Dinner", k:"group:7",
+       note:"The host or Emma will email attendees the details."}
+    ]
+  },
+  {
+    id:"speaker7", date:"2027-04-21", dow:"Wed", term:"Spring 2027",
+    speaker:"Kate Duchowny", affiliation:["Institute for Social Sciences", "University of Michigan"],
+    title:"TBD",
+    time:"3:00pm–4:00pm", location:"CAC Conference Room 419",
+    organizer:"Yuan Zhang", organizerEmail:"yuan.zhang@columbia.edu",
+    office:"CAC Conference Room 419",
+    slots:[
+      {t:"9:30am – 10:00am", type:"11", k:"11:930"},
+      {t:"10:00am – 10:30am", type:"11", k:"11:0"},
+      {t:"10:30am – 11:00am", type:"11", k:"11:1"},
+      {t:"11:00am – 11:30am", type:"11", k:"11:2"},
+      {t:"12:00pm – 1:30pm", type:"lunch", cap:6, label:"Lunch with Trainees", k:"group:3"},
+      {t:"1:45pm – 2:15pm", type:"11", k:"11:4"},
+      {t:"2:15pm – 2:45pm", type:"11", k:"11:5"},
+      {t:"3:00pm – 4:00pm", type:"seminar", label:"Seminar Presentation"},
+      {t:"Time and location TBD", type:"dinner", cap:5, label:"Dinner", k:"group:7",
        note:"The host or Emma will email attendees the details."}
     ]
   }
@@ -544,7 +629,16 @@ function fmtDate(d){
 
 function renderList(){
   listBody.innerHTML = "";
+  let shownTerm = null;
   SEMINARS.forEach(s=>{
+    /* One divider row per term, in the order the seminars are listed. */
+    if(s.term && s.term !== shownTerm){
+      shownTerm = s.term;
+      const th = document.createElement("tr");
+      th.className = "term-row";
+      th.innerHTML = `<td colspan="4">${escapeHtml(s.term)}</td>`;
+      listBody.appendChild(th);
+    }
     const tr = document.createElement("tr");
     tr.className = "row";
     tr.tabIndex = 0;                                   // reachable by keyboard
