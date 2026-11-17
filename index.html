@@ -755,7 +755,7 @@ function showDetail(id){
     const btn = document.createElement("button");
     if(name){
       btn.className = "cancel"; btn.textContent = "Cancel";
-      btn.onclick = async ()=>{ btn.disabled=true; await removeSignup(id,key,name); showDetail(id); };
+      btn.onclick = ()=> askConfirm("Cancel sign-up?", `Remove ${name} from ${sl.t} with ${s.speaker}?`, async ()=>{ btn.disabled=true; await removeSignup(id,key,name); showDetail(id); });
     } else {
       btn.textContent = "Sign up";
       btn.onclick = ()=> askName(`${sl.t} with ${s.speaker}`, async nm=>{ await addSignup(id,key,nm); showDetail(id); });
@@ -795,7 +795,7 @@ function showDetail(id){
     arr.forEach(nm=>{
       const tag = document.createElement("span"); tag.className = "tag";
       tag.innerHTML = `${escapeHtml(nm)} <button type="button" class="x" title="Remove" aria-label="Remove ${escapeHtml(nm)}">×</button>`;
-      tag.querySelector(".x").onclick = async ()=>{ await removeSignup(id,key,nm); showDetail(id); };
+      tag.querySelector(".x").onclick = ()=> askConfirm("Cancel sign-up?", `Remove ${nm} from ${g.sl.label || "this event"} with ${s.speaker}?`, async ()=>{ await removeSignup(id,key,nm); showDetail(id); });
       list.appendChild(tag);
     });
     wrap.appendChild(list);
@@ -861,6 +861,22 @@ function restoreInputs(state){
 }
 
 /* ---------- Name modal ---------- */
+function askConfirm(title, what, cb){
+  const bg = document.createElement("div"); bg.className = "modal-bg";
+  bg.innerHTML = `<div class="modal" role="dialog" aria-modal="true">
+    <h3>${escapeHtml(title)}</h3><p>${escapeHtml(what)}</p>
+    <div class="actions"><button id="cfNo">Keep sign-up</button><button class="primary" id="cfYes">Yes, cancel it</button></div>
+  </div>`;
+  document.body.appendChild(bg);
+  const close = ()=>{ document.removeEventListener("keydown", onKey); if(bg.parentNode) document.body.removeChild(bg); };
+  const onKey = e=>{ if(e.key==="Escape") close(); };
+  document.addEventListener("keydown", onKey);
+  bg.querySelector("#cfYes").onclick = ()=>{ close(); cb(); };
+  bg.querySelector("#cfNo").onclick = close;
+  bg.onclick = e=>{ if(e.target===bg) close(); };
+  bg.querySelector("#cfNo").focus();
+}
+
 function askName(what, cb){
   const bg = document.createElement("div"); bg.className = "modal-bg";
   bg.innerHTML = `<div class="modal">
