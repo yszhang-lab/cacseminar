@@ -714,8 +714,8 @@ function showDetail(id){
     const mine = s.slots.map((sl,i)=>({sl,i})).filter(o=> (o.sl.day || "") === day);
     if(day) html += `<div class="day-title">${escapeHtml(day)}</div>`;
     if(mine.some(o=> !isGroupSlot(o.sl))){
-      html += `<div class="sec-title">🗓️ 1-on-1 Meetings</div>`;
-      html += `<p class="sec-note">All meetings in ${escapeHtml(s.office)} unless noted. <b>If you need an hour, add your name to two time slots.</b></p>`;
+      html += `<div class="sec-title">🗓️ 1-on-1 Meetings (${escapeHtml(s.office)} unless noted)</div>`;
+      html += `<p class="sec-note"><b>If you need an hour, add your name to two time slots.</b></p>`;
       html += `<div class="slots" id="slots-${di}"></div>`;
     }
     mine.filter(o=> isGroupSlot(o.sl)).forEach(g=>{
