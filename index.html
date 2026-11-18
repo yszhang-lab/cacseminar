@@ -700,8 +700,7 @@ function showDetail(id){
   }
 
   html += `
-    <div class="howto"><b>How to sign up:</b> click <b>Sign up</b> next to an open time, then type your name and confirm.
-      <br>For lunch and dinner, type your name in the box and click <b>Add</b>.<br>To remove yourself, click <b>Cancel</b> (or the × next to your name).
+    <div class="howto"><b>How to sign up:</b> click <b>Sign up</b> next to an open time, then type your name and confirm.<br>To remove yourself, click <b>Cancel</b> (or the × next to your name).
       <br><span class="howto-note">It may take a few seconds for your name to show up or disappear.</span></div>
 `;
 
@@ -722,7 +721,8 @@ function showDetail(id){
       const icon = g.sl.type==="lunch" ? "🍽️ " : g.sl.type==="dinner" ? "🍷 " : "👥 ";
       const tbdCls = g.sl.tbd ? " tbd" : "";
       html += `<div class="sec-title${tbdCls}">${icon}${escapeHtml(g.sl.label || "")}${ g.sl.tbd ? ` <span class="note-tag">To be confirmed</span>` : "" }</div>`;
-      if(g.sl.note) html += `<p class="sec-note${tbdCls}">${escapeHtml(g.sl.note)}</p>`;
+      const addTip = g.sl.tbd ? "" : `Type your name in the box and click <b>Add</b>.`;
+      if(addTip || g.sl.note) html += `<p class="sec-note${tbdCls}">${addTip}${addTip && g.sl.note ? " " : ""}${g.sl.note ? escapeHtml(g.sl.note) : ""}</p>`;
       html += `<div id="grp-${g.i}"></div>`;
     });
   });
